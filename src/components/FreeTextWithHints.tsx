@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import type { LikertValue } from "@/lib/survey-data";
+import type { LikertValue, FreetextGuide } from "@/lib/survey-data";
 
 interface FreeTextWithHintsProps {
   questionId: string;
@@ -10,6 +10,7 @@ interface FreeTextWithHintsProps {
   onChange: (value: string) => void;
   previousAnswers: Record<string, { likert: string; freetext: string }>;
   starterSentences: string[];
+  guide: FreetextGuide | null;
 }
 
 export default function FreeTextWithHints({
@@ -19,6 +20,7 @@ export default function FreeTextWithHints({
   onChange,
   previousAnswers,
   starterSentences,
+  guide,
 }: FreeTextWithHintsProps) {
   const [hint, setHint] = useState<string>("");
   const [isLoadingHint, setIsLoadingHint] = useState(false);
@@ -146,15 +148,22 @@ export default function FreeTextWithHints({
   return (
     <div className="space-y-3">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-text-secondary">
-          そう思う理由を教えてください。
-          <span className="text-text-muted ml-1">（任意・スキップ可）</span>
-        </p>
-        {value.length > 0 && (
-          <span className="text-xs text-text-muted tabular-nums">
-            {value.length}文字
-          </span>
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-text-secondary">
+            {guide?.label || "そう思う理由を教えてください"}
+            <span className="text-text-muted font-normal ml-1">（任意・スキップ可）</span>
+          </p>
+          {value.length > 0 && (
+            <span className="text-xs text-text-muted tabular-nums">
+              {value.length}文字
+            </span>
+          )}
+        </div>
+        {guide?.description && (
+          <p className="text-xs text-text-muted leading-relaxed">
+            {guide.description}
+          </p>
         )}
       </div>
 

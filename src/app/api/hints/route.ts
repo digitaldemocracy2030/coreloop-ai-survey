@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
 ${prevAnswersFormatted || "（まだ他の設問には回答していません）"}
 回答者の現在の自由記述: ${currentText || "（まだ何も書いていません）"}
 
-上記を踏まえ、回答者がさらに考えを深めるためのヒントを2-3文で提示してください。`;
+上記を踏まえ、回答者がさらに考えを深めるための問いかけを一文で提示してください。パッと読んで理解できる簡潔な文にしてください。`;
 
     const hint = await callOpenRouter(
       [
