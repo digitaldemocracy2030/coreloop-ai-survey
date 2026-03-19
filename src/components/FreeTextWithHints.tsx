@@ -10,6 +10,7 @@ interface FreeTextWithHintsProps {
   onChange: (value: string) => void;
   previousAnswers: Record<string, { likert: string; freetext: string }>;
   starterSentences: string[];
+  followUpQuestion?: string;
 }
 
 export default function FreeTextWithHints({
@@ -19,6 +20,7 @@ export default function FreeTextWithHints({
   onChange,
   previousAnswers,
   starterSentences,
+  followUpQuestion,
 }: FreeTextWithHintsProps) {
   const [hint, setHint] = useState<string>("");
   const [isLoadingHint, setIsLoadingHint] = useState(false);
@@ -148,7 +150,7 @@ export default function FreeTextWithHints({
       {/* Header */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-text-secondary">
-          そう思う理由を教えてください。
+          {followUpQuestion || "そう思う理由を教えてください。"}
           <span className="text-text-muted ml-1">（任意・スキップ可）</span>
         </p>
         {value.length > 0 && (

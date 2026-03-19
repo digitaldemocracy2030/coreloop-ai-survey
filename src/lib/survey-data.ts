@@ -21,14 +21,40 @@ export const INTEREST_OPTIONS = [
   { value: "1", label: "ほとんど関心がない" },
 ] as const;
 
+export interface FollowUpQuestions {
+  agree: string;     // strongly_agree, agree
+  disagree: string;  // strongly_disagree, disagree
+  neutral: string;   // neutral
+  dont_know: string; // dont_know
+}
+
 export interface SurveyQuestion {
   id: string;
   text: string;
   description?: string;
   pros: string[];
   cons: string[];
+  followUpQuestions: FollowUpQuestions;
   starterSentences: string[];
   hintSystemPrompt: string;
+}
+
+export function getFollowUpQuestion(
+  question: SurveyQuestion,
+  likertValue: LikertValue
+): string {
+  switch (likertValue) {
+    case "strongly_agree":
+    case "agree":
+      return question.followUpQuestions.agree;
+    case "strongly_disagree":
+    case "disagree":
+      return question.followUpQuestions.disagree;
+    case "neutral":
+      return question.followUpQuestions.neutral;
+    case "dont_know":
+      return question.followUpQuestions.dont_know;
+  }
 }
 
 // ========================================================================
@@ -51,6 +77,12 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
       "巨大資本を持つ企業しか広告事業を運営できなくなり、市場の独占が進む。",
       "責任の所在（どこまでがPFの過失か）の線引きが難しく、訴訟が乱発される。",
     ],
+    followUpQuestions: {
+      agree: "正当な広告まで一律に排除されるリスクについてはどう考えますか？",
+      disagree: "広告で収益を得ている以上、安全も保障すべきという意見についてはどう思いますか？",
+      neutral: "賛成・反対どちらの考えに近いか、迷っているポイントを教えてください。",
+      dont_know: "この問題について、判断に必要な情報や気になる点があれば教えてください。",
+    },
     starterSentences: [
       "広告で利益を得ている以上、詐欺被害への法的責任を負うのは当然だと思います。",
       "詐欺かどうかの判断は難しく、プラットフォームだけに責任を負わせるのは無理があると思います。",
@@ -83,6 +115,12 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
       "悪意のある集団が競合他社の広告を執拗に通報し、削除に追い込む攻撃を誘発する。",
       "24時間監視体制を維持できる大手と、そうでない中小PF間の格差が広がる。",
     ],
+    followUpQuestions: {
+      agree: "短時間での判定による誤削除のリスクについてはどう考えますか？",
+      disagree: "対応が遅れるほど被害が拡大するという意見についてはどう思いますか？",
+      neutral: "賛成・反対どちらの考えに近いか、迷っているポイントを教えてください。",
+      dont_know: "この問題について、判断に必要な情報や気になる点があれば教えてください。",
+    },
     starterSentences: [
       "詐欺だとわかっているなら、24時間以内に削除するのは当然だと思います。",
       "24時間では正確な判断が難しく、誤って正当な広告まで削除されるリスクがあると思います。",
@@ -113,6 +151,12 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
       "個人事業主や小規模企業の迅速なマーケティング活動を阻害する可能性がある。",
       "プラットフォーム側に膨大な個人・企業情報が集中し、情報漏洩のリスクが高まる。",
     ],
+    followUpQuestions: {
+      agree: "確認コストが広告主の負担増や情報漏洩リスクにつながる点についてはどう考えますか？",
+      disagree: "匿名の詐欺グループの参入を防げるという意見についてはどう思いますか？",
+      neutral: "賛成・反対どちらの考えに近いか、迷っているポイントを教えてください。",
+      dont_know: "この問題について、判断に必要な情報や気になる点があれば教えてください。",
+    },
     starterSentences: [
       "匿名で詐欺広告を出せる現状はおかしいので、身元確認は必須だと思います。",
       "身元確認のコストや手間が正当な広告主にとって大きな負担になりそうで心配です。",
@@ -143,6 +187,12 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
       "全ての広告にラベルが付くとユーザーが慣れてしまい、警告としての効果が薄れる。",
       "詐欺師側がラベルを偽装したり、AIを使わない従来の手口にシフトしたりするだけになる。",
     ],
+    followUpQuestions: {
+      agree: "ラベルの基準策定が難しく形骸化するという懸念についてはどう考えますか？",
+      disagree: "消費者がAI生成コンテンツを見分ける手がかりになるという意見についてはどう思いますか？",
+      neutral: "賛成・反対どちらの考えに近いか、迷っているポイントを教えてください。",
+      dont_know: "この問題について、判断に必要な情報や気になる点があれば教えてください。",
+    },
     starterSentences: [
       "AIで作られた広告にはラベルを付けるべきです。消費者が判断するための情報は多い方がいいと思います。",
       "ラベルをつけても詐欺師は別の方法に切り替えるだけなので、あまり効果がないと思います。",
@@ -174,6 +224,12 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
       "「外資排除」とみなされ、海外からの投資や最新テクノロジーの流入を妨げる。",
       "サービス停止の基準が曖昧な場合、時の政権による恣意的な運用が懸念される。",
     ],
+    followUpQuestions: {
+      agree: "数千万人のユーザーの生活に影響が出るリスクについてはどう考えますか？",
+      disagree: "罰金を経費扱いして改善しない企業への抑止力が必要という意見についてはどう思いますか？",
+      neutral: "賛成・反対どちらの考えに近いか、迷っているポイントを教えてください。",
+      dont_know: "この問題について、判断に必要な情報や気になる点があれば教えてください。",
+    },
     starterSentences: [
       "何度も違反するなら、サービス停止を含む厳しい罰則がないと企業は動かないと思います。",
       "サービス停止は何千万人もの利用者に影響が出るので、やりすぎだと思います。",
@@ -205,6 +261,12 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
       "「自由な言論空間」としてのネットの価値が損なわれ、社会の活力が低下する。",
       "憲法で保障された基本的人権との整合性が取れず、違憲訴訟のリスクを抱える。",
     ],
+    followUpQuestions: {
+      agree: "規制が拡大解釈され、正当な言論まで制限されるリスクについてはどう考えますか？",
+      disagree: "詐欺被害者の泣き寝入りを防ぐために法整備が必要という意見についてはどう思いますか？",
+      neutral: "賛成・反対どちらの考えに近いか、迷っているポイントを教えてください。",
+      dont_know: "この問題について、判断に必要な情報や気になる点があれば教えてください。",
+    },
     starterSentences: [
       "詐欺は犯罪なので、表現の自由が多少制約されても規制を強化すべきだと思います。",
       "規制が拡大解釈されて、正当な広告や言論まで制限される危険があると思います。",
