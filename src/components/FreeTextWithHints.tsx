@@ -160,11 +160,6 @@ export default function FreeTextWithHints({
             </span>
           )}
         </div>
-        {guide?.description && (
-          <p className="text-xs text-text-muted leading-relaxed">
-            {guide.description}
-          </p>
-        )}
       </div>
 
       {/* Starter sentences */}
