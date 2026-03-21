@@ -6,7 +6,6 @@ interface Slide {
   title: string;
   body: string;
   icon: React.ReactNode;
-  highlight?: string;
 }
 
 const SLIDES: Slide[] = [
@@ -17,8 +16,7 @@ const SLIDES: Slide[] = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
       </svg>
     ),
-    body: "SNSやウェブサイトに表示される偽の広告のことです。有名人の写真や名前を無断で使い、「必ず儲かる投資法」などと謳って、お金を騙し取る手口が急増しています。",
-    highlight: "2025年の被害額は約1,274億円（前年比46%増）で過去最悪を記録",
+    body: "SNSやウェブサイトに表示される偽の広告のことです。有名人の写真や名前を無断で使い、「必ず儲かる投資法」などと謳って、お金を騙し取る手口が急増しています。2025年の被害額は約1,274億円（前年比46%増）で過去最悪を記録しました。",
   },
   {
     title: "よくある手口",
@@ -28,8 +26,7 @@ const SLIDES: Slide[] = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
       </svg>
     ),
-    body: "著名人になりすました投資勧誘広告、AIで生成されたディープフェイク動画、「期間限定」「今だけ無料」と焦らせる偽キャンペーンなど、巧妙な手口が使われています。",
-    highlight: "LINEグループに誘導し、サクラが「儲かった」と煽る手口も",
+    body: "著名人になりすました投資勧誘広告、AIで生成されたディープフェイク動画、「期間限定」「今だけ無料」と焦らせる偽キャンペーンなど、巧妙な手口が使われています。LINEグループに誘導し、サクラが「儲かった」と煽る手口もあります。",
   },
   {
     title: "なぜ対策が必要？",
@@ -38,8 +35,7 @@ const SLIDES: Slide[] = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
       </svg>
     ),
-    body: "現在の日本では対応が複数の省庁にまたがり、プラットフォーム事業者への規制も十分ではありません。この調査では、どのような対策をとるべきか、あなたの意見を聞かせてください。",
-    highlight: "市民の声を集め、より良い政策づくりに活かします",
+    body: "現在の日本では対応が複数の省庁にまたがり、プラットフォーム事業者への規制も十分ではありません。この調査では、どのような対策をとるべきか、あなたの意見を聞かせてください。市民の声を集め、より良い政策づくりに活かします。",
   },
 ];
 
@@ -74,13 +70,6 @@ export default function FraudEducationCarousel() {
           <p className="text-sm text-text-secondary leading-relaxed">
             {slide.body}
           </p>
-          {slide.highlight && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg px-3.5 py-2.5">
-              <p className="text-xs text-amber-800 font-medium leading-relaxed">
-                {slide.highlight}
-              </p>
-            </div>
-          )}
         </div>
 
         {/* Navigation arrows */}
