@@ -17,13 +17,22 @@ const LIKERT_SELECTED_STYLES: Record<string, string> = {
   dont_know: "bg-gray-400 text-white border-gray-400 shadow-sm",
 };
 
+const LIKERT_EMOJIS: Record<string, string> = {
+  strongly_agree: "👍",
+  agree: "🙂",
+  neutral: "😐",
+  disagree: "🙁",
+  strongly_disagree: "👎",
+  dont_know: "❓",
+};
+
 export default function LikertScale({
   value,
   onChange,
   disabled,
 }: LikertScaleProps) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="grid grid-cols-6 gap-1.5">
       {LIKERT_OPTIONS.map((option) => {
         const isSelected = value === option.value;
 
@@ -33,7 +42,7 @@ export default function LikertScale({
             type="button"
             disabled={disabled}
             onClick={() => onChange(option.value)}
-            className={`likert-option px-4 py-2.5 rounded-lg border text-sm font-medium transition-all
+            className={`flex flex-col items-center gap-1 py-2 px-1 rounded-lg border text-center font-medium transition-all
               ${
                 isSelected
                   ? LIKERT_SELECTED_STYLES[option.value]
@@ -42,7 +51,8 @@ export default function LikertScale({
               ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
             `}
           >
-            {option.label}
+            <span className="text-lg leading-none">{LIKERT_EMOJIS[option.value]}</span>
+            <span className="text-[10px] sm:text-xs leading-tight">{option.label}</span>
           </button>
         );
       })}
