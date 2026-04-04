@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { SURVEY_INTRO } from "@/lib/survey-data";
 import SurveyPage1 from "@/components/SurveyPage1";
@@ -16,9 +16,24 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [page1Data, setPage1Data] = useState<{
     interestLevel: number;
+    interestReasons: string[];
+    interestOtherText: string;
     answers: Record<string, { likert: string; freetext: string }>;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isStuck, setIsStuck] = useState(true);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsStuck(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [state]);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("survey_session_id");
@@ -42,6 +57,8 @@ export default function Home() {
 
   const handlePage1Submit = async (data: {
     interestLevel: number;
+    interestReasons: string[];
+    interestOtherText: string;
     answers: Record<string, { likert: string; freetext: string }>;
   }) => {
     setIsSubmitting(true);
@@ -108,9 +125,9 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <header className="border-b border-border bg-white sticky top-0 z-10">
+      <header className="bg-white sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-3.5 flex items-center justify-between">
           <h1 className="text-base font-bold text-primary leading-tight">
             {SURVEY_INTRO.title}
@@ -178,14 +195,6 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="flex justify-center">
-              <button
-                onClick={() => { setState("page1"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                className="px-10 py-3.5 bg-primary text-white rounded-xl text-base font-semibold hover:bg-primary-light transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
-              >
-                調査を始める
-              </button>
-            </div>
           </div>
         )}
 
@@ -230,14 +239,50 @@ export default function Home() {
                 みなさまの声が、より良い政策づくりの一助となります。
               </p>
             </div>
+
+            <div className="bg-white border border-border rounded-2xl p-6 max-w-md mx-auto text-left space-y-3">
+              <p className="font-semibold text-text">
+                この取り組みを応援しませんか？
+              </p>
+              <p className="text-text-secondary leading-relaxed">
+                本プロジェクトはクラウドファンディングで運営されています。熟議型世論調査の実現に向けて、ご支援いただけると幸いです。
+              </p>
+              <a
+                href="https://camp-fire.jp/projects/930941/view"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block w-full text-center px-6 py-3 bg-primary text-white rounded-xl text-base font-semibold hover:bg-primary-light transition-all shadow-sm hover:shadow-md"
+              >
+                クラウドファンディングを見る
+              </a>
+            </div>
           </div>
         )}
       </main>
 
+      {/* Sticky start button for intro */}
+      {state === "intro" && (
+        <>
+          <div ref={sentinelRef} className="h-0" />
+          <div className={`sticky bottom-0 z-10 py-3 px-4 backdrop-blur-sm transition-colors duration-300 ${
+            isStuck ? "bg-white/90" : "bg-transparent"
+          }`}>
+            <div className="max-w-2xl mx-auto flex justify-center">
+              <button
+                onClick={() => { setState("page1"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                className="w-full sm:w-auto px-10 py-3.5 bg-primary text-white rounded-xl text-base font-semibold hover:bg-primary-light transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
+              >
+                調査を始める
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Footer */}
       <footer className="border-t border-border bg-white mt-12 py-5">
         <div className="max-w-2xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-text-muted">
-          <p>市民意識調査プロジェクト</p>
+          <a href="https://coreloop.dd2030.org/" target="_blank" rel="noopener noreferrer" className="hover:text-accent underline underline-offset-2">Project Coreloop</a>
           <Link href="/transparency" className="hover:text-accent underline underline-offset-2">
             AIの使用について
           </Link>

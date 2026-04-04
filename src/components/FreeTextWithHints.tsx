@@ -169,9 +169,6 @@ export default function FreeTextWithHints({
       {/* Starter sentences */}
       {showStarters && likertAnswer && (
         <div className="space-y-1.5">
-          <p className="text-xs text-text-muted">
-            クリックして回答を始められます：
-          </p>
           <div className="flex flex-col gap-1.5">
             {starterSentences.map((sentence, i) => (
               <button

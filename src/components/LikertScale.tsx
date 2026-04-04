@@ -1,6 +1,6 @@
 "use client";
 
-import { LIKERT_OPTIONS, type LikertValue } from "@/lib/survey-data";
+import { LIKERT_SCALE_OPTIONS, DONT_KNOW_OPTION, type LikertValue } from "@/lib/survey-data";
 
 interface LikertScaleProps {
   value: LikertValue | null;
@@ -14,7 +14,6 @@ const LIKERT_SELECTED_STYLES: Record<string, string> = {
   neutral: "bg-gray-500 text-white border-gray-500 shadow-sm",
   disagree: "bg-orange-500 text-white border-orange-500 shadow-sm",
   strongly_disagree: "bg-red-500 text-white border-red-500 shadow-sm",
-  dont_know: "bg-gray-400 text-white border-gray-400 shadow-sm",
 };
 
 const LIKERT_EMOJIS: Record<string, string> = {
@@ -23,7 +22,6 @@ const LIKERT_EMOJIS: Record<string, string> = {
   neutral: "😐",
   disagree: "🙁",
   strongly_disagree: "👎",
-  dont_know: "❓",
 };
 
 export default function LikertScale({
@@ -31,31 +29,67 @@ export default function LikertScale({
   onChange,
   disabled,
 }: LikertScaleProps) {
-  return (
-    <div className="grid grid-cols-6 gap-1.5">
-      {LIKERT_OPTIONS.map((option) => {
-        const isSelected = value === option.value;
+  const isDontKnow = value === "dont_know";
 
-        return (
-          <button
-            key={option.value}
-            type="button"
-            disabled={disabled}
-            onClick={() => onChange(option.value)}
-            className={`flex flex-col items-center gap-1 py-2 px-1 rounded-lg border text-center font-medium transition-all
-              ${
-                isSelected
-                  ? LIKERT_SELECTED_STYLES[option.value]
-                  : "bg-white text-text-secondary border-border hover:border-primary/40 hover:text-primary"
-              }
-              ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
-            `}
-          >
-            <span className="text-lg leading-none">{LIKERT_EMOJIS[option.value]}</span>
-            <span className="text-[10px] sm:text-xs leading-tight">{option.label}</span>
-          </button>
-        );
-      })}
+  return (
+    <div className="space-y-3">
+      {/* 5-point Likert scale */}
+      <div className="flex gap-1.5">
+        {LIKERT_SCALE_OPTIONS.map((option) => {
+          const isSelected = value === option.value && !isDontKnow;
+
+          return (
+            <button
+              key={option.value}
+              type="button"
+              disabled={disabled}
+              onClick={() => onChange(option.value)}
+              aria-label={option.label}
+              aria-pressed={isSelected}
+              className={`flex-1 min-w-0 flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-lg border text-center font-medium transition-all
+                ${
+                  isSelected
+                    ? LIKERT_SELECTED_STYLES[option.value]
+                    : isDontKnow
+                      ? "bg-gray-50 text-text-muted border-border/50 opacity-60"
+                      : "bg-white text-text-secondary border-border hover:border-primary/40 hover:text-primary"
+                }
+                ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+              `}
+            >
+              <span className="text-lg leading-none" aria-hidden="true">
+                {LIKERT_EMOJIS[option.value]}
+              </span>
+              <span className="text-[12px] sm:text-sm leading-tight">
+                {option.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Separated "don't know" checkbox */}
+      <label
+        className={`flex items-center gap-2 text-sm cursor-pointer select-none
+          ${disabled ? "opacity-50 cursor-not-allowed" : ""}
+        `}
+      >
+        <input
+          type="checkbox"
+          checked={isDontKnow}
+          disabled={disabled}
+          onChange={() => {
+            if (isDontKnow) {
+              // uncheck: clear the value (parent handles null)
+              onChange(null as unknown as LikertValue);
+            } else {
+              onChange(DONT_KNOW_OPTION.value);
+            }
+          }}
+          className="w-4 h-4 rounded border-gray-300 text-gray-500 focus:ring-gray-400 accent-gray-500"
+        />
+        <span className="text-text-muted">{DONT_KNOW_OPTION.label}</span>
+      </label>
     </div>
   );
 }

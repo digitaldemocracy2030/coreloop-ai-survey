@@ -52,6 +52,7 @@ export default function SurveyPage2({
           { id: "q8", text: "多少の不便や制約があっても、詐欺被害を未然に防ぐための規制は必要だと思う。" },
           { id: "q9", text: "インターネット上の問題には、既存の法律の枠組みでは十分に対処できないと思う。" },
           { id: "q10", text: "詐欺被害が起きてから対処するよりも、事前に厳しく規制する方が社会全体のコストは低いと思う。" },
+          { id: "q11", text: "オンライン詐欺の被害に遭うのは、個人の注意不足よりも社会の仕組みの問題だと思う。" },
         ]);
       } finally {
         setIsLoading(false);
@@ -99,9 +100,10 @@ export default function SurveyPage2({
     <div className="space-y-6">
       {/* Progress */}
       <ProgressBar
-        current={globalCompleted}
-        total={globalTotal}
-        label={`${globalCompleted}/${globalTotal} 問回答済み`}
+        dots={questions.map((q) => ({
+          id: `q-${q.id}`,
+          answered: !!followupAnswers[q.id],
+        }))}
       />
 
       {/* Intro text */}
@@ -121,6 +123,7 @@ export default function SurveyPage2({
       {questions.map((question, index) => (
         <section
           key={question.id}
+          id={`q-${question.id}`}
           className="bg-white border border-border rounded-2xl p-5 sm:p-6"
         >
           <div className="mb-4">

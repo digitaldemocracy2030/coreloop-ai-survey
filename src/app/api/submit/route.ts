@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import type { TablesInsert, TablesUpdate } from "@/lib/database.types";
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,22 +17,24 @@ export async function POST(req: NextRequest) {
     const supabase = createAdminClient();
 
     if (page === 1) {
-      // Upsert page 1 data
-      const row: Record<string, unknown> = {
+      const row: TablesInsert<"responses"> = {
         session_id: sessionId,
         interest_level: data.interestLevel,
         page_completed: 1,
         user_agent: data.userAgent || "",
+        q1_likert: data.answers?.q1?.likert || null,
+        q1_freetext: data.answers?.q1?.freetext || "",
+        q2_likert: data.answers?.q2?.likert || null,
+        q2_freetext: data.answers?.q2?.freetext || "",
+        q3_likert: data.answers?.q3?.likert || null,
+        q3_freetext: data.answers?.q3?.freetext || "",
+        q4_likert: data.answers?.q4?.likert || null,
+        q4_freetext: data.answers?.q4?.freetext || "",
+        q5_likert: data.answers?.q5?.likert || null,
+        q5_freetext: data.answers?.q5?.freetext || "",
+        q6_likert: data.answers?.q6?.likert || null,
+        q6_freetext: data.answers?.q6?.freetext || "",
       };
-
-      // Add Q1-Q6 answers
-      for (let i = 1; i <= 6; i++) {
-        const qId = `q${i}`;
-        if (data.answers?.[qId]) {
-          row[`${qId}_likert`] = data.answers[qId].likert || null;
-          row[`${qId}_freetext`] = data.answers[qId].freetext || "";
-        }
-      }
 
       const { error } = await supabase.from("responses").upsert(row, {
         onConflict: "session_id",
@@ -45,28 +48,21 @@ export async function POST(req: NextRequest) {
         );
       }
     } else if (page === 2) {
-      // Update with page 2 data
-      const row: Record<string, unknown> = {
+      const row: TablesUpdate<"responses"> = {
         page_completed: 2,
         completed_at: new Date().toISOString(),
         additional_comments: data.additionalComments || "",
+        q7_text: data.followupQuestions?.find((fq: { id: string }) => fq.id === "q7")?.text || "",
+        q7_likert: data.followupAnswers?.q7 || null,
+        q8_text: data.followupQuestions?.find((fq: { id: string }) => fq.id === "q8")?.text || "",
+        q8_likert: data.followupAnswers?.q8 || null,
+        q9_text: data.followupQuestions?.find((fq: { id: string }) => fq.id === "q9")?.text || "",
+        q9_likert: data.followupAnswers?.q9 || null,
+        q10_text: data.followupQuestions?.find((fq: { id: string }) => fq.id === "q10")?.text || "",
+        q10_likert: data.followupAnswers?.q10 || null,
+        q11_text: data.followupQuestions?.find((fq: { id: string }) => fq.id === "q11")?.text || "",
+        q11_likert: data.followupAnswers?.q11 || null,
       };
-
-      // Add Q7-Q10
-      for (let i = 7; i <= 10; i++) {
-        const qId = `q${i}`;
-        if (data.followupQuestions) {
-          const q = data.followupQuestions.find(
-            (fq: { id: string }) => fq.id === qId
-          );
-          if (q) {
-            row[`${qId}_text`] = q.text || "";
-          }
-        }
-        if (data.followupAnswers?.[qId]) {
-          row[`${qId}_likert`] = data.followupAnswers[qId] || null;
-        }
-      }
 
       const { error } = await supabase
         .from("responses")
