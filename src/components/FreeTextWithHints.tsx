@@ -5,6 +5,7 @@ import type { LikertValue, FreetextGuide } from "@/lib/survey-data";
 
 interface FreeTextWithHintsProps {
   questionId: string;
+  questionText?: string;
   likertAnswer: LikertValue | null;
   value: string;
   onChange: (value: string) => void;
@@ -15,6 +16,7 @@ interface FreeTextWithHintsProps {
 
 export default function FreeTextWithHints({
   questionId,
+  questionText,
   likertAnswer,
   value,
   onChange,
@@ -62,6 +64,7 @@ export default function FreeTextWithHints({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             questionId,
+            questionText,
             likertAnswer,
             currentText: text,
             previousAnswers,

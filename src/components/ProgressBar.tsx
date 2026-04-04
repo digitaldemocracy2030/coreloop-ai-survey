@@ -1,8 +1,15 @@
 "use client";
 
-interface ProgressDot {
+export interface ProgressDot {
   id: string;
   answered: boolean;
+}
+
+export function scrollToFirstUnanswered(dots: ProgressDot[]): void {
+  const first = dots.find((d) => !d.answered);
+  if (first) {
+    document.getElementById(first.id)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
 }
 
 interface ProgressBarProps {

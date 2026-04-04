@@ -4,7 +4,7 @@ import { useState } from "react";
 import { SURVEY_QUESTIONS, INTEREST_OPTIONS, INTEREST_REASONS, getFreetextGuide, getStarterSentences, type LikertValue } from "@/lib/survey-data";
 import LikertScale from "./LikertScale";
 import FreeTextWithHints from "./FreeTextWithHints";
-import ProgressBar from "./ProgressBar";
+import ProgressBar, { scrollToFirstUnanswered } from "./ProgressBar";
 
 const INTEREST_ID = "q-interest";
 
@@ -16,20 +16,40 @@ interface SurveyPage1Props {
     answers: Record<string, { likert: string; freetext: string }>;
   }) => void;
   isSubmitting: boolean;
+  onAnswerChange?: (questionId: string, data: { likert?: string; freetext?: string; questionText?: string }) => void;
+  onInterestChange?: (data: { interestLevel?: number; interestReasons?: string[]; interestOtherText?: string }) => void;
+  initialAnswers?: Record<string, { likert: string; freetext: string }>;
+  initialInterest?: { level: number | null; reasons: string[]; otherText: string };
 }
 
-export default function SurveyPage1({ onSubmit, isSubmitting }: SurveyPage1Props) {
-  const [interestLevel, setInterestLevel] = useState<number | null>(null);
-  const [interestReasons, setInterestReasons] = useState<string[]>([]);
-  const [interestOtherText, setInterestOtherText] = useState("");
+export default function SurveyPage1({
+  onSubmit,
+  isSubmitting,
+  onAnswerChange,
+  onInterestChange,
+  initialAnswers,
+  initialInterest,
+}: SurveyPage1Props) {
+  const [interestLevel, setInterestLevel] = useState<number | null>(initialInterest?.level ?? null);
+  const [interestReasons, setInterestReasons] = useState<string[]>(initialInterest?.reasons ?? []);
+  const [interestOtherText, setInterestOtherText] = useState(initialInterest?.otherText ?? "");
   const [answers, setAnswers] = useState<
     Record<string, { likert: LikertValue | null; freetext: string }>
-  >({});
+  >(() => {
+    if (!initialAnswers) return {};
+    const restored: Record<string, { likert: LikertValue | null; freetext: string }> = {};
+    for (const [k, v] of Object.entries(initialAnswers)) {
+      restored[k] = { likert: (v.likert as LikertValue) || null, freetext: v.freetext || "" };
+    }
+    return restored;
+  });
 
   const toggleInterestReason = (value: string) => {
-    setInterestReasons((prev) =>
-      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
-    );
+    setInterestReasons((prev) => {
+      const next = prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value];
+      onInterestChange?.({ interestReasons: next });
+      return next;
+    });
   };
 
   const setLikert = (qId: string, value: LikertValue) => {
@@ -37,6 +57,8 @@ export default function SurveyPage1({ onSubmit, isSubmitting }: SurveyPage1Props
       ...prev,
       [qId]: { ...prev[qId], likert: value, freetext: prev[qId]?.freetext || "" },
     }));
+    const question = SURVEY_QUESTIONS.find((q) => q.id === qId);
+    onAnswerChange?.(qId, { likert: value, questionText: question?.text });
   };
 
   const setFreetext = (qId: string, value: string) => {
@@ -44,6 +66,8 @@ export default function SurveyPage1({ onSubmit, isSubmitting }: SurveyPage1Props
       ...prev,
       [qId]: { ...prev[qId], likert: prev[qId]?.likert || null, freetext: value },
     }));
+    const question = SURVEY_QUESTIONS.find((q) => q.id === qId);
+    onAnswerChange?.(qId, { freetext: value, questionText: question?.text });
   };
 
   const progressDots = [
@@ -56,16 +80,9 @@ export default function SurveyPage1({ onSubmit, isSubmitting }: SurveyPage1Props
 
   const canSubmit = interestLevel !== null && SURVEY_QUESTIONS.every((q) => answers[q.id]?.likert);
 
-  const scrollToFirstUnanswered = () => {
-    const first = progressDots.find((d) => !d.answered);
-    if (first) {
-      document.getElementById(first.id)?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  };
-
   const handleSubmit = () => {
     if (!canSubmit || !interestLevel) {
-      scrollToFirstUnanswered();
+      scrollToFirstUnanswered(progressDots);
       return;
     }
     const formattedAnswers: Record<string, { likert: string; freetext: string }> = {};
@@ -110,7 +127,11 @@ export default function SurveyPage1({ onSubmit, isSubmitting }: SurveyPage1Props
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => setInterestLevel(parseInt(opt.value))}
+                onClick={() => {
+                  const val = parseInt(opt.value);
+                  setInterestLevel(val);
+                  onInterestChange?.({ interestLevel: val });
+                }}
                 aria-label={opt.label}
                 aria-pressed={isSelected}
                 className={`flex-1 min-w-0 flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-lg border text-center font-medium transition-all

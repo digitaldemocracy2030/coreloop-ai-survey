@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { callOpenRouter } from "@/lib/openrouter";
-import { SURVEY_QUESTIONS, LIKERT_OPTIONS } from "@/lib/survey-data";
+import { SURVEY_QUESTIONS, LIKERT_OPTIONS, FOLLOWUP_HINT_SYSTEM_PROMPT } from "@/lib/survey-data";
 
 export const runtime = "edge";
 
@@ -9,22 +9,28 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       questionId,
+      questionText,
       likertAnswer,
       currentText,
       previousAnswers,
     }: {
       questionId: string;
+      questionText?: string;
       likertAnswer: string;
       currentText: string;
       previousAnswers: Record<string, { likert: string; freetext: string }>;
     } = body;
 
-    const question = SURVEY_QUESTIONS.find((q) => q.id === questionId);
-    if (!question) {
-      return NextResponse.json(
-        { error: "Invalid question ID" },
-        { status: 400 }
-      );
+    // Find system prompt: use question-specific one for base questions, generic for followups
+    const baseQuestion = SURVEY_QUESTIONS.find((q) => q.id === questionId);
+    let systemPrompt: string;
+
+    if (baseQuestion) {
+      systemPrompt = baseQuestion.hintSystemPrompt;
+    } else {
+      // Followup question — use generic prompt with the question text
+      const qText = questionText || "（質問文なし）";
+      systemPrompt = FOLLOWUP_HINT_SYSTEM_PROMPT.replace("{{QUESTION_TEXT}}", qText);
     }
 
     // Format previous answers for context
@@ -33,7 +39,7 @@ export async function POST(req: NextRequest) {
         const q = SURVEY_QUESTIONS.find((sq) => sq.id === qId);
         const likertLabel =
           LIKERT_OPTIONS.find((o) => o.value === ans.likert)?.label || ans.likert;
-        return `${q?.id?.toUpperCase()}: ${likertLabel}${ans.freetext ? ` - "${ans.freetext}"` : ""}`;
+        return `${qId.toUpperCase()}: ${likertLabel}${ans.freetext ? ` - "${ans.freetext}"` : ""}`;
       })
       .join("\n");
 
@@ -51,7 +57,7 @@ ${prevAnswersFormatted || "（まだ他の設問には回答していません�
 
     const hint = await callOpenRouter(
       [
-        { role: "system", content: question.hintSystemPrompt },
+        { role: "system", content: systemPrompt },
         { role: "user", content: userMessage },
       ],
       { maxTokens: 256, temperature: 0.7 }

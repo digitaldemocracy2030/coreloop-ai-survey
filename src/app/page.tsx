@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { SURVEY_INTRO } from "@/lib/survey-data";
 import SurveyPage1 from "@/components/SurveyPage1";
@@ -8,10 +8,10 @@ import SurveyPage2 from "@/components/SurveyPage2";
 import Link from "next/link";
 import FraudEducationCarousel from "@/components/FraudEducationCarousel";
 
-type SurveyState = "intro" | "page1" | "page2" | "complete";
+type SurveyState = "loading" | "intro" | "page1" | "page2" | "complete";
 
 export default function Home() {
-  const [state, setState] = useState<SurveyState>("intro");
+  const [state, setState] = useState<SurveyState>("loading");
   const [sessionId, setSessionId] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [page1Data, setPage1Data] = useState<{
@@ -20,10 +20,23 @@ export default function Home() {
     interestOtherText: string;
     answers: Record<string, { likert: string; freetext: string }>;
   } | null>(null);
+  const [initialPage1Answers, setInitialPage1Answers] = useState<
+    Record<string, { likert: string; freetext: string }> | undefined
+  >();
+  const [initialPage2Answers, setInitialPage2Answers] = useState<
+    Record<string, { likert: string; freetext: string }> | undefined
+  >();
+  const [initialInterest, setInitialInterest] = useState<{
+    level: number | null;
+    reasons: string[];
+    otherText: string;
+  } | undefined>();
   const [error, setError] = useState<string | null>(null);
   const [isStuck, setIsStuck] = useState(true);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Intersection observer for sticky button
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
@@ -35,25 +48,166 @@ export default function Home() {
     return () => observer.disconnect();
   }, [state]);
 
+  // Session restore on mount
   useEffect(() => {
-    const stored = sessionStorage.getItem("survey_session_id");
-    if (stored) {
-      setSessionId(stored);
-    } else {
-      const newId = uuidv4();
-      sessionStorage.setItem("survey_session_id", newId);
-      setSessionId(newId);
+    const restore = async () => {
+      let sid = localStorage.getItem("survey_session_id");
+      if (!sid) {
+        sid = uuidv4();
+        localStorage.setItem("survey_session_id", sid);
+      }
+      setSessionId(sid);
+
+      // Try to restore from DB
+      try {
+        const res = await fetch(`/api/session?sessionId=${encodeURIComponent(sid)}`);
+        if (res.ok) {
+          const { session, answers } = await res.json();
+
+          if (session && session.page_completed !== 2) {
+            const page1Answers: Record<string, { likert: string; freetext: string }> = {};
+            const page2Answers: Record<string, { likert: string; freetext: string }> = {};
+
+            for (const a of answers || []) {
+              const entry = { likert: a.likert || "", freetext: a.freetext || "" };
+              if (a.is_followup) {
+                page2Answers[a.question_id] = entry;
+              } else {
+                page1Answers[a.question_id] = entry;
+              }
+            }
+
+            if (session.page_completed === 1) {
+              setPage1Data({
+                interestLevel: session.interest_level || 0,
+                interestReasons: session.interest_reasons || [],
+                interestOtherText: session.interest_other_text || "",
+                answers: page1Answers,
+              });
+              if (Object.keys(page2Answers).length > 0) {
+                setInitialPage2Answers(page2Answers);
+              }
+              setState("page2");
+              return;
+            }
+
+            // page_completed === 0: restore to page1 with partial data
+            const hasAnyData =
+              session.interest_level || Object.keys(page1Answers).length > 0;
+
+            if (hasAnyData) {
+              setInitialInterest({
+                level: session.interest_level,
+                reasons: session.interest_reasons || [],
+                otherText: session.interest_other_text || "",
+              });
+              setInitialPage1Answers(
+                Object.keys(page1Answers).length > 0 ? page1Answers : undefined
+              );
+              setState("page1");
+              return;
+            }
+          }
+          // page_completed === 2 or no session: show intro
+        }
+      } catch (err) {
+        console.error("Session restore error:", err);
+      }
+
+      setState("intro");
+    };
+
+    restore();
+  }, []);
+
+  // Auto-save function
+  const autoSaveAnswer = useCallback(
+    (questionId: string, data: { likert?: string; freetext?: string; questionText?: string; isFollowup?: boolean }) => {
+      if (!sessionId) return;
+
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+
+      autoSaveTimerRef.current = setTimeout(async () => {
+        try {
+          await fetch("/api/save-answer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId,
+              questionId,
+              ...data,
+            }),
+          });
+        } catch (err) {
+          console.error("Auto-save error:", err);
+        }
+      }, 1000);
+    },
+    [sessionId]
+  );
+
+  // Auto-save interest data to session
+  const autoSaveSession = useCallback(
+    (data: { interestLevel?: number; interestReasons?: string[]; interestOtherText?: string }) => {
+      if (!sessionId) return;
+
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+
+      autoSaveTimerRef.current = setTimeout(async () => {
+        try {
+          await fetch("/api/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId,
+              ...data,
+            }),
+          });
+        } catch (err) {
+          console.error("Auto-save session error:", err);
+        }
+      }, 1000);
+    },
+    [sessionId]
+  );
+
+  const handleStartSurvey = async () => {
+    // Check if already completed
+    try {
+      const res = await fetch(`/api/session?sessionId=${encodeURIComponent(sessionId)}`);
+      if (res.ok) {
+        const { session } = await res.json();
+        if (session?.page_completed === 2) {
+          setState("complete");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+      }
+    } catch (err) {
+      console.error("Session check error:", err);
     }
 
-    const storedState = sessionStorage.getItem("survey_state");
-    if (storedState === "page2") {
-      const storedPage1 = sessionStorage.getItem("survey_page1_data");
-      if (storedPage1) {
-        setPage1Data(JSON.parse(storedPage1));
-        setState("page2");
-      }
+    setState("page1");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Create session in DB if new
+    try {
+      await fetch("/api/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+          userAgent: navigator.userAgent,
+        }),
+      });
+    } catch (err) {
+      console.error("Session create error:", err);
     }
-  }, []);
+  };
 
   const handlePage1Submit = async (data: {
     interestLevel: number;
@@ -80,8 +234,6 @@ export default function Home() {
       if (!response.ok) throw new Error("Failed to submit page 1");
 
       setPage1Data(data);
-      sessionStorage.setItem("survey_page1_data", JSON.stringify(data));
-      sessionStorage.setItem("survey_state", "page2");
       setState("page2");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -94,7 +246,7 @@ export default function Home() {
 
   const handlePage2Submit = async (data: {
     followupQuestions: { id: string; text: string }[];
-    followupAnswers: Record<string, string>;
+    followupAnswers: Record<string, { likert: string; freetext: string }>;
     additionalComments: string;
   }) => {
     setIsSubmitting(true);
@@ -112,8 +264,6 @@ export default function Home() {
 
       if (!response.ok) throw new Error("Failed to submit page 2");
 
-      sessionStorage.removeItem("survey_state");
-      sessionStorage.removeItem("survey_page1_data");
       setState("complete");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -141,6 +291,13 @@ export default function Home() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6 sm:py-8 flex-1">
+        {/* Loading */}
+        {state === "loading" && (
+          <div className="flex flex-col items-center justify-center py-20 space-y-4">
+            <div className="w-8 h-8 border-[3px] border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+
         {/* Error banner */}
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start justify-between gap-3">
@@ -200,7 +357,14 @@ export default function Home() {
 
         {/* Page 1 */}
         {state === "page1" && (
-          <SurveyPage1 onSubmit={handlePage1Submit} isSubmitting={isSubmitting} />
+          <SurveyPage1
+            onSubmit={handlePage1Submit}
+            isSubmitting={isSubmitting}
+            onAnswerChange={autoSaveAnswer}
+            onInterestChange={autoSaveSession}
+            initialAnswers={initialPage1Answers}
+            initialInterest={initialInterest}
+          />
         )}
 
         {/* Page 2 */}
@@ -209,6 +373,8 @@ export default function Home() {
             page1Answers={page1Data.answers}
             onSubmit={handlePage2Submit}
             isSubmitting={isSubmitting}
+            initialAnswers={initialPage2Answers}
+            onAnswerChange={autoSaveAnswer}
           />
         )}
 
@@ -269,7 +435,7 @@ export default function Home() {
           }`}>
             <div className="max-w-2xl mx-auto flex justify-center">
               <button
-                onClick={() => { setState("page1"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                onClick={handleStartSurvey}
                 className="w-full sm:w-auto px-10 py-3.5 bg-primary text-white rounded-xl text-base font-semibold hover:bg-primary-light transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
               >
                 調査を始める

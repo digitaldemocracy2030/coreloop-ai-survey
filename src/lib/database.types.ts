@@ -34,6 +34,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      answers: {
+        Row: {
+          created_at: string | null
+          freetext: string | null
+          id: string
+          is_followup: boolean | null
+          likert: string | null
+          question_id: string
+          question_text: string | null
+          session_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          freetext?: string | null
+          id?: string
+          is_followup?: boolean | null
+          likert?: string | null
+          question_id: string
+          question_text?: string | null
+          session_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          freetext?: string | null
+          id?: string
+          is_followup?: boolean | null
+          likert?: string | null
+          question_id?: string
+          question_text?: string | null
+          session_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "answers_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["session_id"]
+          },
+        ]
+      }
       llm_cache: {
         Row: {
           cache_key: string
@@ -58,36 +102,16 @@ export type Database = {
         }
         Relationships: []
       }
-      responses: {
+      sessions: {
         Row: {
           additional_comments: string | null
           completed_at: string | null
           created_at: string | null
           id: string
           interest_level: number | null
+          interest_other_text: string | null
+          interest_reasons: Json | null
           page_completed: number | null
-          q1_freetext: string | null
-          q1_likert: string | null
-          q10_likert: string | null
-          q10_text: string | null
-          q11_likert: string | null
-          q11_text: string | null
-          q2_freetext: string | null
-          q2_likert: string | null
-          q3_freetext: string | null
-          q3_likert: string | null
-          q4_freetext: string | null
-          q4_likert: string | null
-          q5_freetext: string | null
-          q5_likert: string | null
-          q6_freetext: string | null
-          q6_likert: string | null
-          q7_likert: string | null
-          q7_text: string | null
-          q8_likert: string | null
-          q8_text: string | null
-          q9_likert: string | null
-          q9_text: string | null
           session_id: string
           updated_at: string | null
           user_agent: string | null
@@ -98,29 +122,9 @@ export type Database = {
           created_at?: string | null
           id?: string
           interest_level?: number | null
+          interest_other_text?: string | null
+          interest_reasons?: Json | null
           page_completed?: number | null
-          q1_freetext?: string | null
-          q1_likert?: string | null
-          q10_likert?: string | null
-          q10_text?: string | null
-          q11_likert?: string | null
-          q11_text?: string | null
-          q2_freetext?: string | null
-          q2_likert?: string | null
-          q3_freetext?: string | null
-          q3_likert?: string | null
-          q4_freetext?: string | null
-          q4_likert?: string | null
-          q5_freetext?: string | null
-          q5_likert?: string | null
-          q6_freetext?: string | null
-          q6_likert?: string | null
-          q7_likert?: string | null
-          q7_text?: string | null
-          q8_likert?: string | null
-          q8_text?: string | null
-          q9_likert?: string | null
-          q9_text?: string | null
           session_id: string
           updated_at?: string | null
           user_agent?: string | null
@@ -131,29 +135,9 @@ export type Database = {
           created_at?: string | null
           id?: string
           interest_level?: number | null
+          interest_other_text?: string | null
+          interest_reasons?: Json | null
           page_completed?: number | null
-          q1_freetext?: string | null
-          q1_likert?: string | null
-          q10_likert?: string | null
-          q10_text?: string | null
-          q11_likert?: string | null
-          q11_text?: string | null
-          q2_freetext?: string | null
-          q2_likert?: string | null
-          q3_freetext?: string | null
-          q3_likert?: string | null
-          q4_freetext?: string | null
-          q4_likert?: string | null
-          q5_freetext?: string | null
-          q5_likert?: string | null
-          q6_freetext?: string | null
-          q6_likert?: string | null
-          q7_likert?: string | null
-          q7_text?: string | null
-          q8_likert?: string | null
-          q8_text?: string | null
-          q9_likert?: string | null
-          q9_text?: string | null
           session_id?: string
           updated_at?: string | null
           user_agent?: string | null
