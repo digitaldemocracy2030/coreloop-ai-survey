@@ -1,4 +1,4 @@
-import { type ReactNode, type ElementType } from "react";
+import type { ElementType, ReactNode } from "react";
 
 // ============================================================
 // Title — 見出し用（1種類）
@@ -10,9 +10,15 @@ interface TitleProps {
   className?: string;
 }
 
-export function Title({ children, as: Tag = "h3", className = "" }: TitleProps) {
+export function Title({
+  children,
+  as: Tag = "h3",
+  className = "",
+}: TitleProps) {
   return (
-    <Tag className={`text-[15px] font-semibold text-text leading-relaxed ${className}`}>
+    <Tag
+      className={`text-[15px] font-semibold text-text leading-relaxed ${className}`}
+    >
       {children}
     </Tag>
   );

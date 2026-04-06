@@ -1,8 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { callOpenRouter } from "@/lib/openrouter";
-import { SURVEY_QUESTIONS, LIKERT_OPTIONS, FOLLOWUP_HINT_SYSTEM_PROMPT, HINT_USER_MESSAGE_TEMPLATE } from "@/lib/survey-data";
+import {
+  FOLLOWUP_HINT_SYSTEM_PROMPT,
+  HINT_USER_MESSAGE_TEMPLATE,
+  LIKERT_OPTIONS,
+  SURVEY_QUESTIONS,
+} from "@/lib/survey-data";
 
-export const runtime = "edge";
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,15 +34,18 @@ export async function POST(req: NextRequest) {
     } else {
       // Followup question — use generic prompt with the question text
       const qText = questionText || "（質問文なし）";
-      systemPrompt = FOLLOWUP_HINT_SYSTEM_PROMPT.replace("{{QUESTION_TEXT}}", qText);
+      systemPrompt = FOLLOWUP_HINT_SYSTEM_PROMPT.replace(
+        "{{QUESTION_TEXT}}",
+        qText,
+      );
     }
 
     // Format previous answers for context
     const prevAnswersFormatted = Object.entries(previousAnswers || {})
       .map(([qId, ans]) => {
-        const q = SURVEY_QUESTIONS.find((sq) => sq.id === qId);
         const likertLabel =
-          LIKERT_OPTIONS.find((o) => o.value === ans.likert)?.label || ans.likert;
+          LIKERT_OPTIONS.find((o) => o.value === ans.likert)?.label ||
+          ans.likert;
         return `${qId.toUpperCase()}: ${likertLabel}${ans.freetext ? ` - "${ans.freetext}"` : ""}`;
       })
       .join("\n");
@@ -48,9 +55,14 @@ export async function POST(req: NextRequest) {
       likertAnswer ||
       "未回答";
 
-    const userMessage = HINT_USER_MESSAGE_TEMPLATE
-      .replace("{{LIKERT_LABEL}}", likertLabel)
-      .replace("{{PREVIOUS_ANSWERS}}", prevAnswersFormatted || "（まだ他の設問には回答していません）")
+    const userMessage = HINT_USER_MESSAGE_TEMPLATE.replace(
+      "{{LIKERT_LABEL}}",
+      likertLabel,
+    )
+      .replace(
+        "{{PREVIOUS_ANSWERS}}",
+        prevAnswersFormatted || "（まだ他の設問には回答していません）",
+      )
       .replace("{{CURRENT_TEXT}}", currentText || "（まだ何も書いていません）");
 
     const hint = await callOpenRouter(
@@ -58,7 +70,7 @@ export async function POST(req: NextRequest) {
         { role: "system", content: systemPrompt },
         { role: "user", content: userMessage },
       ],
-      { maxTokens: 256, temperature: 0.7 }
+      { maxTokens: 256, temperature: 0.7 },
     );
 
     return NextResponse.json({ hint });
@@ -66,7 +78,7 @@ export async function POST(req: NextRequest) {
     console.error("Hint generation error:", error);
     return NextResponse.json(
       { error: "ヒントの生成中にエラーが発生しました。" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

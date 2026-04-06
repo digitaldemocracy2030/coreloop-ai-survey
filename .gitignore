@@ -31,7 +31,12 @@ yarn-error.log*
 # env files
 .env
 .env*.local
+.env.production
 !.env.local.example
+
+# cloudflare
+.open-next/
+.wrangler/
 
 # supabase local
 supabase/.branches/

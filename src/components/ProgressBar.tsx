@@ -8,7 +8,9 @@ export interface ProgressDot {
 export function scrollToFirstUnanswered(dots: ProgressDot[]): void {
   const first = dots.find((d) => !d.answered);
   if (first) {
-    document.getElementById(first.id)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    document
+      .getElementById(first.id)
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 }
 

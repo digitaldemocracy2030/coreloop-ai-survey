@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import type { LikertValue, FreetextGuide } from "@/lib/survey-data";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { FreetextGuide, LikertValue } from "@/lib/survey-data";
 import { Typography } from "./Typography";
 
 interface FreeTextWithHintsProps {
@@ -91,7 +91,7 @@ export default function FreeTextWithHints({
         }
       }
     },
-    [questionId, questionText, likertAnswer, previousAnswers]
+    [questionId, questionText, likertAnswer, previousAnswers],
   );
 
   // Debounced hint trigger on text change
@@ -120,7 +120,10 @@ export default function FreeTextWithHints({
     setShowStarters(false);
     textareaRef.current?.focus();
     setTimeout(() => {
-      containerRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      containerRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
     }, 100);
     setTimeout(() => fetchHint(sentence), 500);
   };
@@ -148,7 +151,14 @@ export default function FreeTextWithHints({
         <div className="flex items-center justify-between">
           <Typography size="regular" weight="bold" secondary>
             {guide?.label || "そう思う理由を教えてください"}
-            <Typography as="span" size="regular" muted className="font-normal ml-1">（任意）</Typography>
+            <Typography
+              as="span"
+              size="regular"
+              muted
+              className="font-normal ml-1"
+            >
+              （任意）
+            </Typography>
           </Typography>
         </div>
       </div>
@@ -170,8 +180,6 @@ export default function FreeTextWithHints({
           </div>
         </div>
       )}
-
-
 
       {/* Textarea */}
       <textarea
@@ -209,7 +217,9 @@ export default function FreeTextWithHints({
           </div>
           <p
             className={`text-sm text-amber-900/80 leading-relaxed transition-all duration-300 ${
-              hintVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
+              hintVisible
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-1"
             }`}
           >
             {hint}

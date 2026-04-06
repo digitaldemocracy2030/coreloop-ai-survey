@@ -1,8 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
 import { SURVEY_QUESTIONS } from "@/lib/survey-data";
-
-export const runtime = "edge";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,7 +10,7 @@ export async function POST(req: NextRequest) {
     if (!sessionId) {
       return NextResponse.json(
         { error: "Session ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -29,20 +27,20 @@ export async function POST(req: NextRequest) {
           page_completed: 1,
           user_agent: data.userAgent || "",
         },
-        { onConflict: "session_id" }
+        { onConflict: "session_id" },
       );
 
       if (sessionError) {
         console.error("Session upsert error:", sessionError);
         return NextResponse.json(
           { error: "回答の保存に失敗しました。" },
-          { status: 500 }
+          { status: 500 },
         );
       }
 
       // Bulk upsert answers for Q1-QN
       const answerRows = Object.entries(
-        data.answers as Record<string, { likert: string; freetext: string }>
+        data.answers as Record<string, { likert: string; freetext: string }>,
       ).map(([qId, ans]) => {
         const question = SURVEY_QUESTIONS.find((q) => q.id === qId);
         return {
@@ -64,7 +62,7 @@ export async function POST(req: NextRequest) {
           console.error("Answers upsert error:", answersError);
           return NextResponse.json(
             { error: "回答の保存に失敗しました。" },
-            { status: 500 }
+            { status: 500 },
           );
         }
       }
@@ -83,15 +81,17 @@ export async function POST(req: NextRequest) {
         console.error("Session update error:", sessionError);
         return NextResponse.json(
           { error: "回答の保存に失敗しました。" },
-          { status: 500 }
+          { status: 500 },
         );
       }
 
       // Bulk upsert followup answers
       const followupQuestions: { id: string; text: string }[] =
         data.followupQuestions || [];
-      const followupAnswers: Record<string, { likert: string; freetext: string }> =
-        data.followupAnswers || {};
+      const followupAnswers: Record<
+        string,
+        { likert: string; freetext: string }
+      > = data.followupAnswers || {};
 
       const answerRows = followupQuestions.map((fq) => ({
         session_id: sessionId,
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
           console.error("Followup answers upsert error:", answersError);
           return NextResponse.json(
             { error: "回答の保存に失敗しました。" },
-            { status: 500 }
+            { status: 500 },
           );
         }
       }
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
     console.error("Submit error:", error);
     return NextResponse.json(
       { error: "回答の送信中にエラーが発生しました。" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

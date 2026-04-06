@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { type LikertValue } from "@/lib/survey-data";
-import LikertScale from "./LikertScale";
+import { useEffect, useState } from "react";
+import type { LikertValue } from "@/lib/survey-data";
 import FreeTextWithHints from "./FreeTextWithHints";
+import LikertScale from "./LikertScale";
 import ProgressBar, { scrollToFirstUnanswered } from "./ProgressBar";
 import { Title, Typography } from "./Typography";
 
@@ -37,12 +37,20 @@ interface SurveyPage2Props {
   }) => void;
   isSubmitting: boolean;
   initialAnswers?: Record<string, { likert: string; freetext: string }>;
-  onAnswerChange?: (questionId: string, data: { likert?: string; freetext?: string; questionText?: string; isFollowup?: boolean }) => void;
+  onAnswerChange?: (
+    questionId: string,
+    data: {
+      likert?: string;
+      freetext?: string;
+      questionText?: string;
+      isFollowup?: boolean;
+    },
+  ) => void;
 }
 
 function getStartersForLikert(
   question: FollowupQuestion,
-  likert: LikertValue | null
+  likert: LikertValue | null,
 ): string[] {
   if (!likert || !question.starterSentences) return [];
   if (likert === "strongly_agree" || likert === "agree")
@@ -56,7 +64,7 @@ function getStartersForLikert(
 
 function getGuideForLikert(
   question: FollowupQuestion,
-  likert: LikertValue | null
+  likert: LikertValue | null,
 ): { label: string } | null {
   if (!likert || !question.freetextGuide) return null;
   if (likert === "strongly_agree" || likert === "agree")
@@ -83,9 +91,15 @@ export default function SurveyPage2({
     Record<string, { likert: LikertValue | null; freetext: string }>
   >(() => {
     if (!initialAnswers) return {};
-    const restored: Record<string, { likert: LikertValue | null; freetext: string }> = {};
+    const restored: Record<
+      string,
+      { likert: LikertValue | null; freetext: string }
+    > = {};
     for (const [k, v] of Object.entries(initialAnswers)) {
-      restored[k] = { likert: (v.likert as LikertValue) || null, freetext: v.freetext || "" };
+      restored[k] = {
+        likert: (v.likert as LikertValue) || null,
+        freetext: v.freetext || "",
+      };
     }
     return restored;
   });
@@ -120,19 +134,35 @@ export default function SurveyPage2({
   const setLikert = (qId: string, value: LikertValue) => {
     setAnswers((prev) => ({
       ...prev,
-      [qId]: { ...prev[qId], likert: value, freetext: prev[qId]?.freetext || "" },
+      [qId]: {
+        ...prev[qId],
+        likert: value,
+        freetext: prev[qId]?.freetext || "",
+      },
     }));
     const question = questions.find((q) => q.id === qId);
-    onAnswerChange?.(qId, { likert: value, questionText: question?.text, isFollowup: true });
+    onAnswerChange?.(qId, {
+      likert: value,
+      questionText: question?.text,
+      isFollowup: true,
+    });
   };
 
   const setFreetext = (qId: string, value: string) => {
     setAnswers((prev) => ({
       ...prev,
-      [qId]: { ...prev[qId], likert: prev[qId]?.likert || null, freetext: value },
+      [qId]: {
+        ...prev[qId],
+        likert: prev[qId]?.likert || null,
+        freetext: value,
+      },
     }));
     const question = questions.find((q) => q.id === qId);
-    onAnswerChange?.(qId, { freetext: value, questionText: question?.text, isFollowup: true });
+    onAnswerChange?.(qId, {
+      freetext: value,
+      questionText: question?.text,
+      isFollowup: true,
+    });
   };
 
   const canSubmit =
@@ -148,7 +178,10 @@ export default function SurveyPage2({
       scrollToFirstUnanswered(progressDots);
       return;
     }
-    const formattedAnswers: Record<string, { likert: string; freetext: string }> = {};
+    const formattedAnswers: Record<
+      string,
+      { likert: string; freetext: string }
+    > = {};
     for (const q of questions) {
       formattedAnswers[q.id] = {
         likert: answers[q.id]?.likert || "",
@@ -163,12 +196,15 @@ export default function SurveyPage2({
   };
 
   // Build previousAnswers for hints (page1 + current page2 answers)
-  const previousAnswersForHints: Record<string, { likert: string; freetext: string }> = {
+  const previousAnswersForHints: Record<
+    string,
+    { likert: string; freetext: string }
+  > = {
     ...page1Answers,
     ...Object.fromEntries(
       Object.entries(answers)
         .filter(([, v]) => v.likert)
-        .map(([k, v]) => [k, { likert: v.likert || "", freetext: v.freetext }])
+        .map(([k, v]) => [k, { likert: v.likert || "", freetext: v.freetext }]),
     ),
   };
 
@@ -238,11 +274,11 @@ export default function SurveyPage2({
                   previousAnswers={previousAnswersForHints}
                   starterSentences={getStartersForLikert(
                     question,
-                    answers[question.id]?.likert || null
+                    answers[question.id]?.likert || null,
                   )}
                   guide={getGuideForLikert(
                     question,
-                    answers[question.id]?.likert || null
+                    answers[question.id]?.likert || null,
                   )}
                 />
               </div>
@@ -254,7 +290,9 @@ export default function SurveyPage2({
       {/* Additional Comments */}
       <section className="bg-white border border-border rounded-2xl p-5 sm:p-6">
         <Title className="mb-1">その他、ご意見があればお聞かせください</Title>
-        <Typography as="p" size="regular" muted className="mb-3">（任意）</Typography>
+        <Typography as="p" size="regular" muted className="mb-3">
+          （任意）
+        </Typography>
         <textarea
           value={additionalComments}
           onChange={(e) => setAdditionalComments(e.target.value)}

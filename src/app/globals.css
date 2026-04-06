@@ -19,8 +19,9 @@
 }
 
 body {
-  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP",
-    "Yu Gothic", "Meiryo", sans-serif;
+  font-family:
+    "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic",
+    "Meiryo", sans-serif;
   color: var(--color-text);
   background-color: #ffffff;
   -webkit-font-smoothing: antialiased;
@@ -35,7 +36,9 @@ body {
 .hint-fade-enter-active {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 400ms ease, transform 400ms ease;
+  transition:
+    opacity 400ms ease,
+    transform 400ms ease;
 }
 .hint-fade-exit {
   opacity: 1;

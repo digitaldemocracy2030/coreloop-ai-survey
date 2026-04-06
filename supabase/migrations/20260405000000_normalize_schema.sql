@@ -5,14 +5,11 @@
 -- Drop old flat table
 DROP TABLE IF EXISTS responses CASCADE;
 
--- Enable UUID extension (idempotent)
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 -- ============================================================
 -- Sessions table (one row per survey respondent)
 -- ============================================================
 CREATE TABLE sessions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id TEXT UNIQUE NOT NULL,
   interest_level INTEGER CHECK (interest_level IS NULL OR interest_level BETWEEN 1 AND 5),
   interest_reasons JSONB DEFAULT '[]',
@@ -32,7 +29,7 @@ CREATE INDEX idx_sessions_completed ON sessions(completed_at);
 -- Answers table (one row per question per session)
 -- ============================================================
 CREATE TABLE answers (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id TEXT NOT NULL REFERENCES sessions(session_id) ON DELETE CASCADE,
   question_id TEXT NOT NULL,
   question_text TEXT DEFAULT '',

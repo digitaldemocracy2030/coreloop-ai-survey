@@ -1,0 +1,13 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "coreloop-ai-survey"
+main = ".open-next/worker.js"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+NEXT_PUBLIC_SUPABASE_URL = "https://gtdmvvdrrtrifrutpltg.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0ZG12dmRycnRyaWZydXRwbHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0NDA2NTAsImV4cCI6MjA5MTAxNjY1MH0.cEOm8bT2qFLcaWYvkN0rt8NysSuFS2JEkdCY6n4d_GI"
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"

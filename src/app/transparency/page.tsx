@@ -1,12 +1,12 @@
+import Link from "next/link";
+import { Title, Typography } from "@/components/Typography";
 import { MODEL_INFO } from "@/lib/openrouter";
 import {
-  SURVEY_QUESTIONS,
   FOLLOWUP_GENERATION_PROMPT,
   FOLLOWUP_HINT_SYSTEM_PROMPT,
   HINT_USER_MESSAGE_TEMPLATE,
+  SURVEY_QUESTIONS,
 } from "@/lib/survey-data";
-import Link from "next/link";
-import { Title, Typography } from "@/components/Typography";
 
 export const metadata = {
   title: "AIの使用について - 市民意識調査",
@@ -20,7 +20,10 @@ export default function TransparencyPage() {
           <h1 className="text-base font-bold text-primary leading-tight">
             AIの使用について
           </h1>
-          <Link href="/" className="text-sm font-normal text-accent leading-relaxed hover:underline">
+          <Link
+            href="/"
+            className="text-sm font-normal text-accent leading-relaxed hover:underline"
+          >
             調査に戻る
           </Link>
         </div>
@@ -29,7 +32,9 @@ export default function TransparencyPage() {
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-10">
         {/* Overview */}
         <section>
-          <Title as="h2" className="mb-4">概要</Title>
+          <Title as="h2" className="mb-4">
+            概要
+          </Title>
           <div className="bg-surface border border-border rounded-xl p-6 space-y-3">
             <Typography as="p" size="regular" secondary>
               この市民意識調査では、回答体験を支援するためにAI（人工知能）を2つの場面で使用しています。
@@ -44,24 +49,67 @@ export default function TransparencyPage() {
 
         {/* Model Info */}
         <section>
-          <Title as="h2" className="mb-4">使用モデル</Title>
+          <Title as="h2" className="mb-4">
+            使用モデル
+          </Title>
           <div className="bg-white border border-border rounded-xl p-6">
             <dl className="space-y-3">
               <div className="flex gap-4">
-                <Typography as="dt" size="regular" weight="bold" className="w-32 shrink-0">モデル名</Typography>
-                <Typography as="dd" size="regular" secondary>{MODEL_INFO.name}</Typography>
+                <Typography
+                  as="dt"
+                  size="regular"
+                  weight="bold"
+                  className="w-32 shrink-0"
+                >
+                  モデル名
+                </Typography>
+                <Typography as="dd" size="regular" secondary>
+                  {MODEL_INFO.name}
+                </Typography>
               </div>
               <div className="flex gap-4">
-                <Typography as="dt" size="regular" weight="bold" className="w-32 shrink-0">モデルID</Typography>
-                <Typography as="dd" size="small" secondary className="font-mono">{MODEL_INFO.id}</Typography>
+                <Typography
+                  as="dt"
+                  size="regular"
+                  weight="bold"
+                  className="w-32 shrink-0"
+                >
+                  モデルID
+                </Typography>
+                <Typography
+                  as="dd"
+                  size="small"
+                  secondary
+                  className="font-mono"
+                >
+                  {MODEL_INFO.id}
+                </Typography>
               </div>
               <div className="flex gap-4">
-                <Typography as="dt" size="regular" weight="bold" className="w-32 shrink-0">提供元</Typography>
-                <Typography as="dd" size="regular" secondary>{MODEL_INFO.provider}</Typography>
+                <Typography
+                  as="dt"
+                  size="regular"
+                  weight="bold"
+                  className="w-32 shrink-0"
+                >
+                  提供元
+                </Typography>
+                <Typography as="dd" size="regular" secondary>
+                  {MODEL_INFO.provider}
+                </Typography>
               </div>
               <div className="flex gap-4">
-                <Typography as="dt" size="regular" weight="bold" className="w-32 shrink-0">説明</Typography>
-                <Typography as="dd" size="regular" secondary>{MODEL_INFO.description}</Typography>
+                <Typography
+                  as="dt"
+                  size="regular"
+                  weight="bold"
+                  className="w-32 shrink-0"
+                >
+                  説明
+                </Typography>
+                <Typography as="dd" size="regular" secondary>
+                  {MODEL_INFO.description}
+                </Typography>
               </div>
             </dl>
           </div>
@@ -80,7 +128,9 @@ export default function TransparencyPage() {
 
             {/* User message template */}
             <div className="bg-white border border-border rounded-xl p-6">
-              <Title as="h3" className="mb-2">ユーザーメッセージテンプレート</Title>
+              <Title as="h3" className="mb-2">
+                ユーザーメッセージテンプレート
+              </Title>
               <Typography as="p" size="small" muted className="mb-3">
                 回答者の状態を踏まえてAIに送信されるメッセージのテンプレートです。
               </Typography>
@@ -90,9 +140,14 @@ export default function TransparencyPage() {
             </div>
 
             {/* Per-question system prompts */}
-            <Title as="h3" className="mt-6">設問別システムプロンプト（Q1〜Q{SURVEY_QUESTIONS.length}）</Title>
+            <Title as="h3" className="mt-6">
+              設問別システムプロンプト（Q1〜Q{SURVEY_QUESTIONS.length}）
+            </Title>
             {SURVEY_QUESTIONS.map((q, i) => (
-              <details key={q.id} className="bg-white border border-border rounded-xl overflow-hidden">
+              <details
+                key={q.id}
+                className="bg-white border border-border rounded-xl overflow-hidden"
+              >
                 <summary className="px-6 py-4 cursor-pointer hover:bg-surface">
                   <Typography size="regular" weight="bold">
                     Q{i + 1}: {q.text.substring(0, 50)}...
@@ -108,9 +163,12 @@ export default function TransparencyPage() {
 
             {/* Followup hint prompt */}
             <div className="bg-white border border-border rounded-xl p-6">
-              <Title as="h3" className="mb-2">フォローアップ質問用ヒントプロンプト</Title>
+              <Title as="h3" className="mb-2">
+                フォローアップ質問用ヒントプロンプト
+              </Title>
               <Typography as="p" size="small" muted className="mb-3">
-                AI生成のフォローアップ質問に対する自由記述ヒントに使用されます。{`{{QUESTION_TEXT}}`} はAI生成の質問文で置換されます。
+                AI生成のフォローアップ質問に対する自由記述ヒントに使用されます。
+                {`{{QUESTION_TEXT}}`} はAI生成の質問文で置換されます。
               </Typography>
               <pre className="bg-gray-50 rounded-lg p-4 text-xs overflow-x-auto whitespace-pre-wrap font-mono">
                 {FOLLOWUP_HINT_SYSTEM_PROMPT}
@@ -126,14 +184,18 @@ export default function TransparencyPage() {
           </Title>
           <div className="space-y-4">
             <Typography as="p" size="regular" secondary>
-              2ページ目では、1ページ目（Q1〜Q{SURVEY_QUESTIONS.length}）の回答パターンに基づいて、
+              2ページ目では、1ページ目（Q1〜Q{SURVEY_QUESTIONS.length}
+              ）の回答パターンに基づいて、
               回答者の価値観や考え方をより深く理解するための追加質問5問をAIが生成します。
               生成された質問は各回答者によって異なる場合があります。
             </Typography>
             <div className="bg-white border border-border rounded-xl p-6">
-              <Title as="h3" className="mb-2">フォローアップ質問生成プロンプト</Title>
+              <Title as="h3" className="mb-2">
+                フォローアップ質問生成プロンプト
+              </Title>
               <Typography as="p" size="small" muted className="mb-3">
-                回答者のQ1〜Q{SURVEY_QUESTIONS.length}の回答パターンに基づいて、背景にある価値観を探る質問を生成するために使用されます。
+                回答者のQ1〜Q{SURVEY_QUESTIONS.length}
+                の回答パターンに基づいて、背景にある価値観を探る質問を生成するために使用されます。
               </Typography>
               <pre className="bg-gray-50 rounded-lg p-4 text-xs overflow-x-auto whitespace-pre-wrap font-mono">
                 {FOLLOWUP_GENERATION_PROMPT}
@@ -144,7 +206,9 @@ export default function TransparencyPage() {
 
         {/* Data handling */}
         <section>
-          <Title as="h2" className="mb-4">データの取り扱い</Title>
+          <Title as="h2" className="mb-4">
+            データの取り扱い
+          </Title>
           <div className="bg-surface border border-border rounded-xl p-6 space-y-3">
             <Typography as="p" size="regular" secondary>
               回答データは匿名で収集されます。AIサービス（OpenRouter経由でGoogleのGeminiモデル）に送信されるデータは、
@@ -160,7 +224,10 @@ export default function TransparencyPage() {
 
       <footer className="border-t border-border mt-16 py-6">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <Link href="/" className="text-sm font-normal text-accent leading-relaxed hover:underline">
+          <Link
+            href="/"
+            className="text-sm font-normal text-accent leading-relaxed hover:underline"
+          >
             調査に戻る
           </Link>
         </div>

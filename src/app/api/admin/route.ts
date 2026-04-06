@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
 
 function checkAuth(req: NextRequest): boolean {
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     console.error("Admin fetch error:", sessionsError);
     return NextResponse.json(
       { error: "データの取得に失敗しました。" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
     console.error("Admin answers fetch error:", answersError);
     return NextResponse.json(
       { error: "データの取得に失敗しました。" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -114,11 +114,7 @@ export async function GET(req: NextRequest) {
 
         const questionVals = allQuestionIds.flatMap((qId) => {
           const a = answerMap[qId];
-          return [
-            a?.question_text || "",
-            a?.likert || "",
-            a?.freetext || "",
-          ];
+          return [a?.question_text || "", a?.likert || "", a?.freetext || ""];
         });
 
         return [...sessionVals, ...questionVals]
@@ -143,10 +139,8 @@ export async function GET(req: NextRequest) {
 
   // JSON response with summary stats
   const total = sessions?.length || 0;
-  const completed =
-    sessions?.filter((r) => r.page_completed === 2).length || 0;
-  const page1Only =
-    sessions?.filter((r) => r.page_completed === 1).length || 0;
+  const completed = sessions?.filter((r) => r.page_completed === 2).length || 0;
+  const page1Only = sessions?.filter((r) => r.page_completed === 1).length || 0;
 
   // Likert distributions for base questions
   const likertDistributions: Record<string, Record<string, number>> = {};
@@ -161,7 +155,12 @@ export async function GET(req: NextRequest) {
   }
 
   // Followup data
-  const followupData: { question_id: string; question_text: string; likert: string; freetext: string }[] = [];
+  const followupData: {
+    question_id: string;
+    question_text: string;
+    likert: string;
+    freetext: string;
+  }[] = [];
   for (const a of allAnswers || []) {
     if (a.is_followup && a.question_text && a.likert) {
       followupData.push({

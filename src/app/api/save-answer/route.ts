@@ -1,17 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
-
-export const runtime = "edge";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { sessionId, questionId, likert, freetext, questionText, isFollowup } = body;
+    const {
+      sessionId,
+      questionId,
+      likert,
+      freetext,
+      questionText,
+      isFollowup,
+    } = body;
 
     if (!sessionId || !questionId) {
       return NextResponse.json(
         { error: "sessionId and questionId are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -42,7 +47,10 @@ export async function POST(req: NextRequest) {
 
         if (error) {
           console.error("Answer update error:", error);
-          return NextResponse.json({ error: "回答の保存に失敗しました。" }, { status: 500 });
+          return NextResponse.json(
+            { error: "回答の保存に失敗しました。" },
+            { status: 500 },
+          );
         }
       }
     } else {
@@ -58,13 +66,19 @@ export async function POST(req: NextRequest) {
 
       if (error) {
         console.error("Answer insert error:", error);
-        return NextResponse.json({ error: "回答の保存に失敗しました。" }, { status: 500 });
+        return NextResponse.json(
+          { error: "回答の保存に失敗しました。" },
+          { status: 500 },
+        );
       }
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Save answer error:", error);
-    return NextResponse.json({ error: "回答の保存に失敗しました。" }, { status: 500 });
+    return NextResponse.json(
+      { error: "回答の保存に失敗しました。" },
+      { status: 500 },
+    );
   }
 }

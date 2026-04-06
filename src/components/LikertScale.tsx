@@ -1,6 +1,10 @@
 "use client";
 
-import { LIKERT_SCALE_OPTIONS, DONT_KNOW_OPTION, type LikertValue } from "@/lib/survey-data";
+import {
+  DONT_KNOW_OPTION,
+  LIKERT_SCALE_OPTIONS,
+  type LikertValue,
+} from "@/lib/survey-data";
 import { Typography } from "./Typography";
 
 interface LikertScaleProps {
@@ -61,7 +65,10 @@ export default function LikertScale({
               <span className="text-lg leading-none" aria-hidden="true">
                 {LIKERT_EMOJIS[option.value]}
               </span>
-              <Typography size="small" className={`leading-tight !text-xs sm:!text-sm ${isSelected ? "!text-white !font-semibold" : ""}`}>
+              <Typography
+                size="small"
+                className={`leading-tight !text-xs sm:!text-sm ${isSelected ? "!text-white !font-semibold" : ""}`}
+              >
                 {option.label}
               </Typography>
             </button>
@@ -88,7 +95,9 @@ export default function LikertScale({
           }}
           className="w-4 h-4 rounded border-gray-300 text-gray-500 focus:ring-gray-400 accent-gray-500"
         />
-        <Typography size="regular" muted>{DONT_KNOW_OPTION.label}</Typography>
+        <Typography size="regular" muted>
+          {DONT_KNOW_OPTION.label}
+        </Typography>
       </label>
     </div>
   );

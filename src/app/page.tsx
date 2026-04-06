@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { SURVEY_INTRO } from "@/lib/survey-data";
+import FraudEducationCarousel from "@/components/FraudEducationCarousel";
 import SurveyPage1 from "@/components/SurveyPage1";
 import SurveyPage2 from "@/components/SurveyPage2";
-import Link from "next/link";
-import FraudEducationCarousel from "@/components/FraudEducationCarousel";
 import { Title, Typography } from "@/components/Typography";
+import { SURVEY_INTRO } from "@/lib/survey-data";
 
 type SurveyState = "loading" | "intro" | "page1" | "page2" | "complete";
 
@@ -27,11 +27,14 @@ export default function Home() {
   const [initialPage2Answers, setInitialPage2Answers] = useState<
     Record<string, { likert: string; freetext: string }> | undefined
   >();
-  const [initialInterest, setInitialInterest] = useState<{
-    level: number | null;
-    reasons: string[];
-    otherText: string;
-  } | undefined>();
+  const [initialInterest, setInitialInterest] = useState<
+    | {
+        level: number | null;
+        reasons: string[];
+        otherText: string;
+      }
+    | undefined
+  >();
   const [error, setError] = useState<string | null>(null);
   const [isStuck, setIsStuck] = useState(true);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -43,11 +46,11 @@ export default function Home() {
     if (!sentinel) return;
     const observer = new IntersectionObserver(
       ([entry]) => setIsStuck(!entry.isIntersecting),
-      { threshold: 0 }
+      { threshold: 0 },
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [state]);
+  }, []);
 
   // Session restore on mount
   useEffect(() => {
@@ -61,16 +64,27 @@ export default function Home() {
 
       // Try to restore from DB
       try {
-        const res = await fetch(`/api/session?sessionId=${encodeURIComponent(sid)}`);
+        const res = await fetch(
+          `/api/session?sessionId=${encodeURIComponent(sid)}`,
+        );
         if (res.ok) {
           const { session, answers } = await res.json();
 
           if (session && session.page_completed !== 2) {
-            const page1Answers: Record<string, { likert: string; freetext: string }> = {};
-            const page2Answers: Record<string, { likert: string; freetext: string }> = {};
+            const page1Answers: Record<
+              string,
+              { likert: string; freetext: string }
+            > = {};
+            const page2Answers: Record<
+              string,
+              { likert: string; freetext: string }
+            > = {};
 
             for (const a of answers || []) {
-              const entry = { likert: a.likert || "", freetext: a.freetext || "" };
+              const entry = {
+                likert: a.likert || "",
+                freetext: a.freetext || "",
+              };
               if (a.is_followup) {
                 page2Answers[a.question_id] = entry;
               } else {
@@ -103,7 +117,7 @@ export default function Home() {
                 otherText: session.interest_other_text || "",
               });
               setInitialPage1Answers(
-                Object.keys(page1Answers).length > 0 ? page1Answers : undefined
+                Object.keys(page1Answers).length > 0 ? page1Answers : undefined,
               );
               setState("page1");
               return;
@@ -123,7 +137,15 @@ export default function Home() {
 
   // Auto-save function
   const autoSaveAnswer = useCallback(
-    (questionId: string, data: { likert?: string; freetext?: string; questionText?: string; isFollowup?: boolean }) => {
+    (
+      questionId: string,
+      data: {
+        likert?: string;
+        freetext?: string;
+        questionText?: string;
+        isFollowup?: boolean;
+      },
+    ) => {
       if (!sessionId) return;
 
       if (autoSaveTimerRef.current) {
@@ -146,12 +168,16 @@ export default function Home() {
         }
       }, 1000);
     },
-    [sessionId]
+    [sessionId],
   );
 
   // Auto-save interest data to session
   const autoSaveSession = useCallback(
-    (data: { interestLevel?: number; interestReasons?: string[]; interestOtherText?: string }) => {
+    (data: {
+      interestLevel?: number;
+      interestReasons?: string[];
+      interestOtherText?: string;
+    }) => {
       if (!sessionId) return;
 
       if (autoSaveTimerRef.current) {
@@ -173,13 +199,15 @@ export default function Home() {
         }
       }, 1000);
     },
-    [sessionId]
+    [sessionId],
   );
 
   const handleStartSurvey = async () => {
     // Check if already completed
     try {
-      const res = await fetch(`/api/session?sessionId=${encodeURIComponent(sessionId)}`);
+      const res = await fetch(
+        `/api/session?sessionId=${encodeURIComponent(sessionId)}`,
+      );
       if (res.ok) {
         const { session } = await res.json();
         if (session?.page_completed === 2) {
@@ -284,7 +312,11 @@ export default function Home() {
             {SURVEY_INTRO.title}
           </h1>
           {(state === "page1" || state === "page2") && (
-            <Typography size="small" muted className="bg-surface px-2.5 py-1 rounded-full">
+            <Typography
+              size="small"
+              muted
+              className="bg-surface px-2.5 py-1 rounded-full"
+            >
               {state === "page1" ? "1" : "2"} / 2 ページ
             </Typography>
           )}
@@ -302,13 +334,26 @@ export default function Home() {
         {/* Error banner */}
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start justify-between gap-3">
-            <Typography as="p" size="regular" className="text-red-700">{error}</Typography>
+            <Typography as="p" size="regular" className="text-red-700">
+              {error}
+            </Typography>
             <button
+              type="button"
               onClick={() => setError(null)}
               className="text-red-400 hover:text-red-600 shrink-0"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -329,22 +374,47 @@ export default function Home() {
             <FraudEducationCarousel />
 
             <div className="bg-white border border-border rounded-2xl p-6 space-y-4">
-              <Typography as="div" size="regular" secondary className="whitespace-pre-line">
+              <Typography
+                as="div"
+                size="regular"
+                secondary
+                className="whitespace-pre-line"
+              >
                 {SURVEY_INTRO.description}
               </Typography>
               <hr className="border-border" />
               <div className="space-y-2">
                 <div className="flex items-start gap-2.5">
-                  <svg className="w-4 h-4 text-text-muted shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  <svg
+                    className="w-4 h-4 text-text-muted shrink-0 mt-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
                   </svg>
                   <Typography as="p" size="small" muted>
                     {SURVEY_INTRO.privacyNote}
                   </Typography>
                 </div>
                 <div className="flex items-start gap-2.5">
-                  <svg className="w-4 h-4 text-text-muted shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  <svg
+                    className="w-4 h-4 text-text-muted shrink-0 mt-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                    />
                   </svg>
                   <Typography as="p" size="small" muted>
                     {SURVEY_INTRO.aiNote}
@@ -352,7 +422,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-
           </div>
         )}
 
@@ -401,7 +470,12 @@ export default function Home() {
               <h2 className="text-2xl font-bold text-text">
                 ご回答ありがとうございました
               </h2>
-              <Typography as="p" size="regular" secondary className="max-w-md mx-auto">
+              <Typography
+                as="p"
+                size="regular"
+                secondary
+                className="max-w-md mx-auto"
+              >
                 いただいたご意見は、今後の熟議型世論調査での論点整理に活用させていただきます。
                 みなさまの声が、より良い政策づくりの一助となります。
               </Typography>
@@ -429,11 +503,14 @@ export default function Home() {
       {state === "intro" && (
         <>
           <div ref={sentinelRef} className="h-0" />
-          <div className={`sticky bottom-0 z-10 py-3 px-4 backdrop-blur-sm transition-colors duration-300 ${
-            isStuck ? "bg-white/90" : "bg-transparent"
-          }`}>
+          <div
+            className={`sticky bottom-0 z-10 py-3 px-4 backdrop-blur-sm transition-colors duration-300 ${
+              isStuck ? "bg-white/90" : "bg-transparent"
+            }`}
+          >
             <div className="max-w-2xl mx-auto flex justify-center">
               <button
+                type="button"
                 onClick={handleStartSurvey}
                 className="w-full sm:w-auto px-10 py-3.5 bg-primary text-white rounded-xl text-base font-semibold hover:bg-primary-light transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
               >
@@ -447,8 +524,18 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-border bg-white mt-12 py-5">
         <div className="max-w-2xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-text-muted">
-          <a href="https://coreloop.dd2030.org/" target="_blank" rel="noopener noreferrer" className="hover:text-accent underline underline-offset-2">Project Coreloop</a>
-          <Link href="/transparency" className="hover:text-accent underline underline-offset-2">
+          <a
+            href="https://coreloop.dd2030.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-accent underline underline-offset-2"
+          >
+            Project Coreloop
+          </a>
+          <Link
+            href="/transparency"
+            className="hover:text-accent underline underline-offset-2"
+          >
             AIの使用について
           </Link>
         </div>

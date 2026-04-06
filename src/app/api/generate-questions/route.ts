@@ -1,12 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { callOpenRouter } from "@/lib/openrouter";
 import {
-  SURVEY_QUESTIONS,
-  LIKERT_OPTIONS,
   FOLLOWUP_GENERATION_PROMPT,
+  LIKERT_OPTIONS,
+  SURVEY_QUESTIONS,
 } from "@/lib/survey-data";
-
-export const runtime = "edge";
 
 const FALLBACK_QUESTIONS = [
   {
@@ -200,7 +198,7 @@ export async function POST(req: NextRequest) {
           content: `回答者のQ1〜Q${questionCount}の回答:\n\n${answersFormatted}\n\nこの回答パターンから、背景にある価値観・考え方を探るフォローアップ質問を5つ生成してください。各質問にはスターター文とfreetextGuideも含めてください。JSON配列のみ出力してください。`,
         },
       ],
-      { maxTokens: 3000, temperature: 0.6 }
+      { maxTokens: 3000, temperature: 0.6 },
     );
 
     // Parse JSON from response (handle markdown code blocks)
@@ -208,7 +206,9 @@ export async function POST(req: NextRequest) {
     try {
       let jsonStr = result.trim();
       if (jsonStr.startsWith("```")) {
-        jsonStr = jsonStr.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
+        jsonStr = jsonStr
+          .replace(/^```(?:json)?\n?/, "")
+          .replace(/\n?```$/, "");
       }
       questions = JSON.parse(jsonStr);
 
@@ -221,15 +221,20 @@ export async function POST(req: NextRequest) {
       questions = questions.map((q: Record<string, unknown>, i: number) => ({
         id: q.id || `q${questionCount + 1 + i}`,
         text: q.text || "",
-        starterSentences: q.starterSentences || FALLBACK_QUESTIONS[i]?.starterSentences || {
-          agree: [], disagree: [], neutral: [], dont_know: [],
-        },
-        freetextGuide: q.freetextGuide || FALLBACK_QUESTIONS[i]?.freetextGuide || {
-          agree: "賛成する理由を教えてください",
-          disagree: "反対する理由を教えてください",
-          neutral: "どちらとも言えない理由を教えてください",
-          dont_know: "わからないと感じる理由を教えてください",
-        },
+        starterSentences: q.starterSentences ||
+          FALLBACK_QUESTIONS[i]?.starterSentences || {
+            agree: [],
+            disagree: [],
+            neutral: [],
+            dont_know: [],
+          },
+        freetextGuide: q.freetextGuide ||
+          FALLBACK_QUESTIONS[i]?.freetextGuide || {
+            agree: "賛成する理由を教えてください",
+            disagree: "反対する理由を教えてください",
+            neutral: "どちらとも言えない理由を教えてください",
+            dont_know: "わからないと感じる理由を教えてください",
+          },
       }));
     } catch {
       console.error("Failed to parse AI response as JSON:", result);

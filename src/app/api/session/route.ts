@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
-
-
-export const runtime = "edge";
 
 // GET: Fetch session + answers for resume
 export async function GET(req: NextRequest) {
   const sessionId = new URL(req.url).searchParams.get("sessionId");
   if (!sessionId) {
-    return NextResponse.json({ error: "sessionId is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "sessionId is required" },
+      { status: 400 },
+    );
   }
 
   const supabase = createAdminClient();
@@ -35,10 +35,19 @@ export async function GET(req: NextRequest) {
 // POST: Create a new session
 export async function POST(req: NextRequest) {
   try {
-    const { sessionId, userAgent, interestLevel, interestReasons, interestOtherText } = await req.json();
+    const {
+      sessionId,
+      userAgent,
+      interestLevel,
+      interestReasons,
+      interestOtherText,
+    } = await req.json();
 
     if (!sessionId) {
-      return NextResponse.json({ error: "sessionId is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "sessionId is required" },
+        { status: 400 },
+      );
     }
 
     const supabase = createAdminClient();
@@ -55,8 +64,10 @@ export async function POST(req: NextRequest) {
       const updates: Record<string, unknown> = {};
       if (userAgent !== undefined) updates.user_agent = userAgent;
       if (interestLevel !== undefined) updates.interest_level = interestLevel;
-      if (interestReasons !== undefined) updates.interest_reasons = interestReasons;
-      if (interestOtherText !== undefined) updates.interest_other_text = interestOtherText;
+      if (interestReasons !== undefined)
+        updates.interest_reasons = interestReasons;
+      if (interestOtherText !== undefined)
+        updates.interest_other_text = interestOtherText;
 
       if (Object.keys(updates).length > 0) {
         const { error: updateError } = await supabase
@@ -66,7 +77,10 @@ export async function POST(req: NextRequest) {
 
         if (updateError) {
           console.error("Session update error:", updateError);
-          return NextResponse.json({ error: "セッションの更新に失敗しました。" }, { status: 500 });
+          return NextResponse.json(
+            { error: "セッションの更新に失敗しました。" },
+            { status: 500 },
+          );
         }
       }
     } else {
@@ -82,13 +96,19 @@ export async function POST(req: NextRequest) {
 
       if (insertError) {
         console.error("Session insert error:", insertError);
-        return NextResponse.json({ error: "セッションの作成に失敗しました。" }, { status: 500 });
+        return NextResponse.json(
+          { error: "セッションの作成に失敗しました。" },
+          { status: 500 },
+        );
       }
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Session error:", error);
-    return NextResponse.json({ error: "セッションの作成に失敗しました。" }, { status: 500 });
+    return NextResponse.json(
+      { error: "セッションの作成に失敗しました。" },
+      { status: 500 },
+    );
   }
 }

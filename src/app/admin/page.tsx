@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { SURVEY_QUESTIONS, LIKERT_OPTIONS } from "@/lib/survey-data";
+import { useCallback, useEffect, useState } from "react";
+import { LIKERT_OPTIONS, SURVEY_QUESTIONS } from "@/lib/survey-data";
 
 interface AdminData {
   summary: {
@@ -44,7 +44,9 @@ export default function AdminPage() {
   const [data, setData] = useState<AdminData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "q1-6" | "q7-10" | "responses">("overview");
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "q1-6" | "q7-10" | "responses"
+  >("overview");
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -121,7 +123,6 @@ export default function AdminPage() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="パスワード"
             className="w-full px-4 py-2 border border-border rounded-lg text-sm"
-            autoFocus
           />
           <button
             type="submit"
@@ -142,9 +143,12 @@ export default function AdminPage() {
       {/* Header */}
       <header className="bg-white border-b border-border sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-lg font-bold text-primary">管理者ダッシュボード</h1>
+          <h1 className="text-lg font-bold text-primary">
+            管理者ダッシュボード
+          </h1>
           <div className="flex items-center gap-3">
             <button
+              type="button"
               onClick={fetchData}
               disabled={isLoading}
               className="text-sm text-accent hover:underline disabled:opacity-50"
@@ -152,6 +156,7 @@ export default function AdminPage() {
               {isLoading ? "更新中..." : "データを更新"}
             </button>
             <button
+              type="button"
               onClick={handleCsvDownload}
               className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-light transition-all"
             >
@@ -171,8 +176,14 @@ export default function AdminPage() {
         {/* Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <SummaryCard label="総回答数" value={data.summary.total} />
-          <SummaryCard label="完了（2ページ目まで）" value={data.summary.completed} />
-          <SummaryCard label="1ページ目のみ完了" value={data.summary.page1Only} />
+          <SummaryCard
+            label="完了（2ページ目まで）"
+            value={data.summary.completed}
+          />
+          <SummaryCard
+            label="1ページ目のみ完了"
+            value={data.summary.page1Only}
+          />
           <SummaryCard
             label="完了率"
             value={
@@ -194,6 +205,7 @@ export default function AdminPage() {
             ] as const
           ).map(([key, label]) => (
             <button
+              type="button"
               key={key}
               onClick={() => setActiveTab(key)}
               className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all ${
@@ -244,7 +256,8 @@ export default function AdminPage() {
               <div className="space-y-4">
                 {SURVEY_QUESTIONS.map((q, i) => {
                   const dist = data.likertDistributions[q.id] || {};
-                  const total = Object.values(dist).reduce((s, v) => s + v, 0) || 1;
+                  const total =
+                    Object.values(dist).reduce((s, v) => s + v, 0) || 1;
                   return (
                     <div key={q.id}>
                       <p className="text-xs text-text-secondary mb-1.5 leading-relaxed">
@@ -274,8 +287,12 @@ export default function AdminPage() {
                 <div className="flex flex-wrap gap-3 pt-2 border-t border-border">
                   {LIKERT_OPTIONS.map((opt) => (
                     <div key={opt.value} className="flex items-center gap-1.5">
-                      <div className={`w-3 h-3 rounded ${LIKERT_COLORS[opt.value]}`} />
-                      <span className="text-[10px] text-text-muted">{opt.label}</span>
+                      <div
+                        className={`w-3 h-3 rounded ${LIKERT_COLORS[opt.value]}`}
+                      />
+                      <span className="text-[10px] text-text-muted">
+                        {opt.label}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -362,10 +379,7 @@ export default function AdminPage() {
             {["q7", "q8", "q9", "q10"].map((qId) => {
               const entries = data.followupData[qId] || [];
               // Group by question text
-              const grouped: Record<
-                string,
-                Record<string, number>
-              > = {};
+              const grouped: Record<string, Record<string, number>> = {};
               for (const entry of entries) {
                 if (!grouped[entry.text]) grouped[entry.text] = {};
                 grouped[entry.text][entry.likert] =
@@ -381,13 +395,21 @@ export default function AdminPage() {
                     {qId.toUpperCase()} ({entries.length}件の回答)
                   </h3>
                   {Object.keys(grouped).length === 0 ? (
-                    <p className="text-sm text-text-muted">回答がありません。</p>
+                    <p className="text-sm text-text-muted">
+                      回答がありません。
+                    </p>
                   ) : (
                     <div className="space-y-4">
                       {Object.entries(grouped).map(([text, dist], j) => {
-                        const total = Object.values(dist).reduce((s, v) => s + v, 0);
+                        const total = Object.values(dist).reduce(
+                          (s, v) => s + v,
+                          0,
+                        );
                         return (
-                          <div key={j} className="border-b border-border pb-3 last:border-0">
+                          <div
+                            key={j}
+                            className="border-b border-border pb-3 last:border-0"
+                          >
                             <p className="text-sm text-text mb-2">
                               「{text}」
                               <span className="text-text-muted ml-2">
@@ -426,6 +448,7 @@ export default function AdminPage() {
                 全{data.responses?.length || 0}件の回答
               </p>
               <button
+                type="button"
                 onClick={handleCsvDownload}
                 className="text-sm text-accent hover:underline"
               >
@@ -465,7 +488,12 @@ export default function AdminPage() {
                         {r.created_at
                           ? new Date(r.created_at as string).toLocaleString(
                               "ja-JP",
-                              { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }
+                              {
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
                             )
                           : "—"}
                       </td>
@@ -481,7 +509,9 @@ export default function AdminPage() {
                               "—"
                             }
                           >
-                            {LIKERT_LABELS[r[`${q.id}_likert`] as string]?.charAt(0) || "—"}
+                            {LIKERT_LABELS[
+                              r[`${q.id}_likert`] as string
+                            ]?.charAt(0) || "—"}
                           </span>
                           {(r[`${q.id}_freetext`] as string) ? (
                             <span
@@ -494,7 +524,9 @@ export default function AdminPage() {
                         </td>
                       ))}
                       <td className="px-3 py-2 text-text-secondary">
-                        {(r.page_completed as number) === 2 ? "✓" : `P${r.page_completed}`}
+                        {(r.page_completed as number) === 2
+                          ? "✓"
+                          : `P${r.page_completed}`}
                       </td>
                     </tr>
                   ))}

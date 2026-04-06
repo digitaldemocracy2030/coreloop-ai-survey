@@ -1,5 +1,5 @@
-import { createAdminClient } from "./supabase";
 import type { ChatMessage } from "./openrouter";
+import { createAdminClient } from "./supabase";
 
 interface CacheEntry {
   cache_key: string;
@@ -16,7 +16,7 @@ async function generateCacheKey(
   messages: ChatMessage[],
   model: string,
   maxTokens: number,
-  temperature: number
+  temperature: number,
 ): Promise<string> {
   const payload = JSON.stringify({ messages, model, maxTokens, temperature });
   const encoded = new TextEncoder().encode(payload);
@@ -32,10 +32,15 @@ export async function getCachedResponse(
   messages: ChatMessage[],
   model: string,
   maxTokens: number,
-  temperature: number
+  temperature: number,
 ): Promise<string | null> {
   try {
-    const cacheKey = await generateCacheKey(messages, model, maxTokens, temperature);
+    const cacheKey = await generateCacheKey(
+      messages,
+      model,
+      maxTokens,
+      temperature,
+    );
     const supabase = createAdminClient();
 
     const { data, error } = await supabase
@@ -64,19 +69,29 @@ export async function setCachedResponse(
   model: string,
   maxTokens: number,
   temperature: number,
-  response: string
+  response: string,
 ): Promise<void> {
   try {
-    const cacheKey = await generateCacheKey(messages, model, maxTokens, temperature);
+    const cacheKey = await generateCacheKey(
+      messages,
+      model,
+      maxTokens,
+      temperature,
+    );
     const supabase = createAdminClient();
 
     await supabase.from("llm_cache").upsert(
       {
         cache_key: cacheKey,
-        request_body: JSON.stringify({ messages, model, maxTokens, temperature }),
+        request_body: JSON.stringify({
+          messages,
+          model,
+          maxTokens,
+          temperature,
+        }),
         response,
       },
-      { onConflict: "cache_key" }
+      { onConflict: "cache_key" },
     );
   } catch {
     // Silently fail — caching is best-effort

@@ -1,9 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { SURVEY_QUESTIONS, INTEREST_OPTIONS, INTEREST_REASONS, getFreetextGuide, getStarterSentences, type LikertValue } from "@/lib/survey-data";
-import LikertScale from "./LikertScale";
+import {
+  getFreetextGuide,
+  getStarterSentences,
+  INTEREST_OPTIONS,
+  INTEREST_REASONS,
+  type LikertValue,
+  SURVEY_QUESTIONS,
+} from "@/lib/survey-data";
 import FreeTextWithHints from "./FreeTextWithHints";
+import LikertScale from "./LikertScale";
 import ProgressBar, { scrollToFirstUnanswered } from "./ProgressBar";
 import { Title, Typography } from "./Typography";
 
@@ -17,10 +24,21 @@ interface SurveyPage1Props {
     answers: Record<string, { likert: string; freetext: string }>;
   }) => void;
   isSubmitting: boolean;
-  onAnswerChange?: (questionId: string, data: { likert?: string; freetext?: string; questionText?: string }) => void;
-  onInterestChange?: (data: { interestLevel?: number; interestReasons?: string[]; interestOtherText?: string }) => void;
+  onAnswerChange?: (
+    questionId: string,
+    data: { likert?: string; freetext?: string; questionText?: string },
+  ) => void;
+  onInterestChange?: (data: {
+    interestLevel?: number;
+    interestReasons?: string[];
+    interestOtherText?: string;
+  }) => void;
   initialAnswers?: Record<string, { likert: string; freetext: string }>;
-  initialInterest?: { level: number | null; reasons: string[]; otherText: string };
+  initialInterest?: {
+    level: number | null;
+    reasons: string[];
+    otherText: string;
+  };
 }
 
 export default function SurveyPage1({
@@ -31,23 +49,37 @@ export default function SurveyPage1({
   initialAnswers,
   initialInterest,
 }: SurveyPage1Props) {
-  const [interestLevel, setInterestLevel] = useState<number | null>(initialInterest?.level ?? null);
-  const [interestReasons, setInterestReasons] = useState<string[]>(initialInterest?.reasons ?? []);
-  const [interestOtherText, setInterestOtherText] = useState(initialInterest?.otherText ?? "");
+  const [interestLevel, setInterestLevel] = useState<number | null>(
+    initialInterest?.level ?? null,
+  );
+  const [interestReasons, setInterestReasons] = useState<string[]>(
+    initialInterest?.reasons ?? [],
+  );
+  const [interestOtherText, setInterestOtherText] = useState(
+    initialInterest?.otherText ?? "",
+  );
   const [answers, setAnswers] = useState<
     Record<string, { likert: LikertValue | null; freetext: string }>
   >(() => {
     if (!initialAnswers) return {};
-    const restored: Record<string, { likert: LikertValue | null; freetext: string }> = {};
+    const restored: Record<
+      string,
+      { likert: LikertValue | null; freetext: string }
+    > = {};
     for (const [k, v] of Object.entries(initialAnswers)) {
-      restored[k] = { likert: (v.likert as LikertValue) || null, freetext: v.freetext || "" };
+      restored[k] = {
+        likert: (v.likert as LikertValue) || null,
+        freetext: v.freetext || "",
+      };
     }
     return restored;
   });
 
   const toggleInterestReason = (value: string) => {
     setInterestReasons((prev) => {
-      const next = prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value];
+      const next = prev.includes(value)
+        ? prev.filter((v) => v !== value)
+        : [...prev, value];
       onInterestChange?.({ interestReasons: next });
       return next;
     });
@@ -56,7 +88,11 @@ export default function SurveyPage1({
   const setLikert = (qId: string, value: LikertValue) => {
     setAnswers((prev) => ({
       ...prev,
-      [qId]: { ...prev[qId], likert: value, freetext: prev[qId]?.freetext || "" },
+      [qId]: {
+        ...prev[qId],
+        likert: value,
+        freetext: prev[qId]?.freetext || "",
+      },
     }));
     const question = SURVEY_QUESTIONS.find((q) => q.id === qId);
     onAnswerChange?.(qId, { likert: value, questionText: question?.text });
@@ -65,7 +101,11 @@ export default function SurveyPage1({
   const setFreetext = (qId: string, value: string) => {
     setAnswers((prev) => ({
       ...prev,
-      [qId]: { ...prev[qId], likert: prev[qId]?.likert || null, freetext: value },
+      [qId]: {
+        ...prev[qId],
+        likert: prev[qId]?.likert || null,
+        freetext: value,
+      },
     }));
     const question = SURVEY_QUESTIONS.find((q) => q.id === qId);
     onAnswerChange?.(qId, { freetext: value, questionText: question?.text });
@@ -79,28 +119,38 @@ export default function SurveyPage1({
     })),
   ];
 
-  const canSubmit = interestLevel !== null && SURVEY_QUESTIONS.every((q) => answers[q.id]?.likert);
+  const canSubmit =
+    interestLevel !== null &&
+    SURVEY_QUESTIONS.every((q) => answers[q.id]?.likert);
 
   const handleSubmit = () => {
     if (!canSubmit || !interestLevel) {
       scrollToFirstUnanswered(progressDots);
       return;
     }
-    const formattedAnswers: Record<string, { likert: string; freetext: string }> = {};
+    const formattedAnswers: Record<
+      string,
+      { likert: string; freetext: string }
+    > = {};
     for (const q of SURVEY_QUESTIONS) {
       formattedAnswers[q.id] = {
         likert: answers[q.id]?.likert || "",
         freetext: answers[q.id]?.freetext || "",
       };
     }
-    onSubmit({ interestLevel, interestReasons, interestOtherText, answers: formattedAnswers });
+    onSubmit({
+      interestLevel,
+      interestReasons,
+      interestOtherText,
+      answers: formattedAnswers,
+    });
   };
 
   // Build previousAnswers for hints context
   const previousAnswersForHints = Object.fromEntries(
     Object.entries(answers)
       .filter(([, v]) => v.likert)
-      .map(([k, v]) => [k, { likert: v.likert || "", freetext: v.freetext }])
+      .map(([k, v]) => [k, { likert: v.likert || "", freetext: v.freetext }]),
   );
 
   return (
@@ -109,7 +159,10 @@ export default function SurveyPage1({
       <ProgressBar dots={progressDots} />
 
       {/* Interest Level */}
-      <section id={INTEREST_ID} className="bg-white border border-border rounded-2xl p-5 sm:p-6">
+      <section
+        id={INTEREST_ID}
+        className="bg-white border border-border rounded-2xl p-5 sm:p-6"
+      >
         <div className="mb-4">
           <div className="flex gap-3 items-start">
             <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0 mt-0.5">
@@ -123,13 +176,13 @@ export default function SurveyPage1({
 
         <div className="flex gap-1.5">
           {INTEREST_OPTIONS.map((opt) => {
-            const isSelected = interestLevel === parseInt(opt.value);
+            const isSelected = interestLevel === parseInt(opt.value, 10);
             return (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => {
-                  const val = parseInt(opt.value);
+                  const val = parseInt(opt.value, 10);
                   setInterestLevel(val);
                   onInterestChange?.({ interestLevel: val });
                 }}
@@ -143,7 +196,10 @@ export default function SurveyPage1({
                   }
                 `}
               >
-                <Typography size="small" className={`leading-tight !text-xs sm:!text-sm ${isSelected ? "!text-white !font-semibold" : ""}`}>
+                <Typography
+                  size="small"
+                  className={`leading-tight !text-xs sm:!text-sm ${isSelected ? "!text-white !font-semibold" : ""}`}
+                >
                   {opt.label}
                 </Typography>
               </button>
@@ -227,8 +283,14 @@ export default function SurveyPage1({
                   value={answers[question.id]?.freetext || ""}
                   onChange={(val) => setFreetext(question.id, val)}
                   previousAnswers={previousAnswersForHints}
-                  starterSentences={getStarterSentences(question, answers[question.id]?.likert || null)}
-                  guide={getFreetextGuide(question, answers[question.id]?.likert || null)}
+                  starterSentences={getStarterSentences(
+                    question,
+                    answers[question.id]?.likert || null,
+                  )}
+                  guide={getFreetextGuide(
+                    question,
+                    answers[question.id]?.likert || null,
+                  )}
                 />
               </div>
             )}
@@ -242,7 +304,9 @@ export default function SurveyPage1({
           <Typography as="p" size="regular" muted className="text-center">
             全ての設問の選択式に回答すると次のページに進めます。
             <br />
-            <Typography as="span" size="small" muted>自由記述はスキップできます。</Typography>
+            <Typography as="span" size="small" muted>
+              自由記述はスキップできます。
+            </Typography>
           </Typography>
         )}
         <button

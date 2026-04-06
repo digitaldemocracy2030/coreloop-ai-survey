@@ -10,9 +10,15 @@ export const LIKERT_SCALE_OPTIONS = [
   { value: "strongly_disagree", label: "強く反対" },
 ] as const;
 
-export const DONT_KNOW_OPTION = { value: "dont_know", label: "わからない・回答できない" } as const;
+export const DONT_KNOW_OPTION = {
+  value: "dont_know",
+  label: "わからない・回答できない",
+} as const;
 
-export const LIKERT_OPTIONS = [...LIKERT_SCALE_OPTIONS, DONT_KNOW_OPTION] as const;
+export const LIKERT_OPTIONS = [
+  ...LIKERT_SCALE_OPTIONS,
+  DONT_KNOW_OPTION,
+] as const;
 
 export type LikertValue = (typeof LIKERT_OPTIONS)[number]["value"];
 
@@ -60,11 +66,13 @@ export interface SurveyQuestion {
 
 export function getFreetextGuide(
   question: SurveyQuestion,
-  likert: LikertValue | null
+  likert: LikertValue | null,
 ): FreetextGuide | null {
   if (!likert) return null;
-  if (likert === "strongly_agree" || likert === "agree") return question.freetextGuides.agree;
-  if (likert === "strongly_disagree" || likert === "disagree") return question.freetextGuides.disagree;
+  if (likert === "strongly_agree" || likert === "agree")
+    return question.freetextGuides.agree;
+  if (likert === "strongly_disagree" || likert === "disagree")
+    return question.freetextGuides.disagree;
   if (likert === "neutral") return question.freetextGuides.neutral;
   if (likert === "dont_know") return question.freetextGuides.dont_know;
   return null;
@@ -72,11 +80,13 @@ export function getFreetextGuide(
 
 export function getStarterSentences(
   question: SurveyQuestion,
-  likert: LikertValue | null
+  likert: LikertValue | null,
 ): string[] {
   if (!likert) return [];
-  if (likert === "strongly_agree" || likert === "agree") return question.starterSentences.agree;
-  if (likert === "strongly_disagree" || likert === "disagree") return question.starterSentences.disagree;
+  if (likert === "strongly_agree" || likert === "agree")
+    return question.starterSentences.agree;
+  if (likert === "strongly_disagree" || likert === "disagree")
+    return question.starterSentences.disagree;
   if (likert === "neutral") return question.starterSentences.neutral;
   if (likert === "dont_know") return question.starterSentences.dont_know;
   return [];

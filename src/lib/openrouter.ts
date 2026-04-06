@@ -14,14 +14,19 @@ export async function callOpenRouter(
     maxTokens?: number;
     temperature?: number;
     skipCache?: boolean;
-  }
+  },
 ): Promise<string> {
   const maxTokens = options?.maxTokens ?? 1024;
   const temperature = options?.temperature ?? 0.7;
 
   // Check cache first (unless explicitly skipped)
   if (!options?.skipCache) {
-    const cached = await getCachedResponse(messages, MODEL, maxTokens, temperature);
+    const cached = await getCachedResponse(
+      messages,
+      MODEL,
+      maxTokens,
+      temperature,
+    );
     if (cached !== null) {
       return cached;
     }
@@ -37,7 +42,9 @@ export async function callOpenRouter(
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": process.env.NEXT_PUBLIC_SUPABASE_URL || "https://citizen-survey.vercel.app",
+      "HTTP-Referer":
+        process.env.NEXT_PUBLIC_SUPABASE_URL ||
+        "https://citizen-survey.vercel.app",
       "X-Title": "Citizen Survey",
     },
     body: JSON.stringify({
@@ -58,7 +65,9 @@ export async function callOpenRouter(
 
   // Store in cache (fire-and-forget)
   if (!options?.skipCache) {
-    setCachedResponse(messages, MODEL, maxTokens, temperature, content).catch(() => {});
+    setCachedResponse(messages, MODEL, maxTokens, temperature, content).catch(
+      () => {},
+    );
   }
 
   return content;
