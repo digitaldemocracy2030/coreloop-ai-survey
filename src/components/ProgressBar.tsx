@@ -28,14 +28,14 @@ export default function ProgressBar({ dots }: ProgressBarProps) {
 
   return (
     <div className="sticky top-[52px] z-10 bg-gray-50 py-2.5 -mt-6 sm:-mt-8">
-      <div className="flex items-center justify-center gap-2 flex-wrap">
+      <div className="flex items-center justify-center gap-1 flex-wrap">
         {dots.map((dot, i) => (
           <button
             key={dot.id}
             type="button"
             onClick={() => handleClick(dot.id)}
             aria-label={`問${i + 1}${dot.answered ? "（回答済み）" : "（未回答）"}`}
-            className={`w-5 h-5 rounded-full border-2 transition-all shrink-0
+            className={`w-4 h-4 rounded-full border-2 transition-all shrink-0
               ${
                 dot.answered
                   ? "bg-green-500 border-green-500"
