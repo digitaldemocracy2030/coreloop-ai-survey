@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import CompletePage from "@/components/CompletePage";
 import FraudEducationCarousel from "@/components/FraudEducationCarousel";
 import SurveyPage1 from "@/components/SurveyPage1";
 import SurveyPage2 from "@/components/SurveyPage2";
@@ -70,6 +71,11 @@ export default function Home() {
         if (res.ok) {
           const { session, answers } = await res.json();
 
+          if (session?.page_completed === 2) {
+            setState("complete");
+            return;
+          }
+
           if (session && session.page_completed !== 2) {
             const page1Answers: Record<
               string,
@@ -106,24 +112,20 @@ export default function Home() {
               return;
             }
 
-            // page_completed === 0: restore to page1 with partial data
-            const hasAnyData =
-              session.interest_level || Object.keys(page1Answers).length > 0;
-
-            if (hasAnyData) {
-              setInitialInterest({
-                level: session.interest_level,
-                reasons: session.interest_reasons || [],
-                otherText: session.interest_other_text || "",
-              });
-              setInitialPage1Answers(
-                Object.keys(page1Answers).length > 0 ? page1Answers : undefined,
-              );
-              setState("page1");
-              return;
-            }
+            // page_completed === 0: session exists, user has already started
+            // Restore to page1 with any partial data (interest level, answers)
+            setInitialInterest({
+              level: session.interest_level,
+              reasons: session.interest_reasons || [],
+              otherText: session.interest_other_text || "",
+            });
+            setInitialPage1Answers(
+              Object.keys(page1Answers).length > 0 ? page1Answers : undefined,
+            );
+            setState("page1");
+            return;
           }
-          // page_completed === 2 or no session: show intro
+          // no session: show intro
         }
       } catch (err) {
         console.error("Session restore error:", err);
@@ -366,7 +368,7 @@ export default function Home() {
               <h2 className="text-2xl font-bold text-text">
                 {SURVEY_INTRO.subtitle}
               </h2>
-              <Typography as="p" size="regular" muted>
+              <Typography as="p" size="regular" secondary>
                 {SURVEY_INTRO.estimatedTime}
               </Typography>
             </div>
@@ -386,7 +388,7 @@ export default function Home() {
               <div className="space-y-2">
                 <div className="flex items-start gap-2.5">
                   <svg
-                    className="w-4 h-4 text-text-muted shrink-0 mt-0.5"
+                    className="w-4 h-4 text-text-secondary shrink-0 mt-0.5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -398,13 +400,13 @@ export default function Home() {
                       d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                     />
                   </svg>
-                  <Typography as="p" size="small" muted>
+                  <Typography as="p" size="regular" secondary>
                     {SURVEY_INTRO.privacyNote}
                   </Typography>
                 </div>
                 <div className="flex items-start gap-2.5">
                   <svg
-                    className="w-4 h-4 text-text-muted shrink-0 mt-0.5"
+                    className="w-4 h-4 text-text-secondary shrink-0 mt-0.5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -416,7 +418,7 @@ export default function Home() {
                       d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
                     />
                   </svg>
-                  <Typography as="p" size="small" muted>
+                  <Typography as="p" size="regular" secondary>
                     {SURVEY_INTRO.aiNote}
                   </Typography>
                 </div>
@@ -450,52 +452,7 @@ export default function Home() {
 
         {/* Complete */}
         {state === "complete" && (
-          <div className="text-center py-20 space-y-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-50 border-2 border-green-200">
-              <svg
-                className="w-8 h-8 text-success"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-            <div className="space-y-3">
-              <h2 className="text-2xl font-bold text-text">
-                ご回答ありがとうございました
-              </h2>
-              <Typography
-                as="p"
-                size="regular"
-                secondary
-                className="max-w-md mx-auto"
-              >
-                いただいたご意見は、今後の熟議型世論調査での論点整理に活用させていただきます。
-                みなさまの声が、より良い政策づくりの一助となります。
-              </Typography>
-            </div>
-
-            <div className="bg-white border border-border rounded-2xl p-6 max-w-md mx-auto text-left space-y-3">
-              <Title as="p">この取り組みを応援しませんか？</Title>
-              <Typography as="p" size="regular" secondary>
-                本プロジェクトはクラウドファンディングで運営されています。熟議型世論調査の実現に向けて、ご支援いただけると幸いです。
-              </Typography>
-              <a
-                href="https://camp-fire.jp/projects/930941/view"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block w-full text-center px-6 py-3 bg-primary text-white rounded-xl text-base font-semibold hover:bg-primary-light transition-all shadow-sm hover:shadow-md"
-              >
-                クラウドファンディングを見る
-              </a>
-            </div>
-          </div>
+          <CompletePage />
         )}
       </main>
 
@@ -512,7 +469,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={handleStartSurvey}
-                className="w-full sm:w-auto px-10 py-3.5 bg-primary text-white rounded-xl text-base font-semibold hover:bg-primary-light transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
+                className="w-full sm:w-auto px-10 py-4 bg-primary text-white rounded-xl text-lg font-bold hover:bg-primary-light transition-all shadow-lg hover:shadow-xl active:scale-[0.98] ring-2 ring-primary/30 ring-offset-2"
               >
                 調査を始める
               </button>
