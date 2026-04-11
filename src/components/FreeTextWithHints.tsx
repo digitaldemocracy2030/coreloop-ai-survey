@@ -161,7 +161,7 @@ export default function FreeTextWithHints({
               muted
               className="font-normal ml-1"
             >
-              （任意）
+              （任意・編集可）
             </Typography>
           </Typography>
         </div>
